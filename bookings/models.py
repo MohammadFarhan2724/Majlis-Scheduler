@@ -58,3 +58,12 @@ SLOT_PERIOD = {
     "19:00": "evening", "19:15": "evening", "19:30": "evening",
     "20:00": "evening", "after_maghribain": "evening",
 }
+
+class Venue(models.Model):
+    name_en = models.CharField(max_length=100)
+    name_hi = models.CharField(max_length=100, blank=True)
+    name_ur = models.CharField(max_length=100, blank=True)
+    city = models.CharField(max_length=50, default="Barabanki")
+
+    def __str__(self):
+        return self.name_en
