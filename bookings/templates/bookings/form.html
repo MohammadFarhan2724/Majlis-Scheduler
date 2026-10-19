@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>New Majlis / Mehfil</title>
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 16px; max-width: 480px; margin: auto; }
+    label { display: block; margin-top: 14px; font-weight: bold; }
+    input, select, textarea { width: 100%; padding: 10px; margin-top: 4px; box-sizing: border-box; font-size: 16px; }
+    input[type=checkbox] { width: auto; }
+    button { margin-top: 20px; padding: 12px; width: 100%; font-size: 16px; }
+    .error { color: #b00020; margin-top: 10px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h2>Schedule a Majlis / Mehfil</h2>
+
+  {% if form.errors %}
+    <div class="error">
+      {{ form.non_field_errors }}
+      {% for field in form %}{{ field.errors }}{% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <label>Type</label>
+    <select name="kind" id="kind">
+      <option value="majlis">Majlis</option>
+      <option value="mehfil">Mehfil</option>
+    </select>
+
+    <label>Category</label>
+    <select name="category" id="category"></select>
+    <input type="text" name="other_category" id="other_category"
+           class="hidden" placeholder="Write the type"
+           value="{{ form.other_category.value|default:'' }}">
+
+    <label>Organizer name</label>
+    {{ form.organizer_name }}
+
+    <div id="isaal_box">
+      <label><input type="checkbox" name="isaal_e_sawaab" id="isaal"
+        {% if form.isaal_e_sawaab.value %}checked{% endif %}> Isaal e Sawaab</label>
+      <div id="marhoomeen_box" class="hidden">
+        <div id="marhoomeen_list">
+          <input type="text" name="marhoomeen" placeholder="Name of Marhoom">
+        </div>
+        <button type="button" id="add_name">+ Add more</button>
+      </div>
+    </div>
+
+    <label>Khitabat</label>
+    {{ form.khitabat }}
+
+    <label>Venue</label>
+    <select name="venue" id="venue">
+      {% for value, label in form.venue.field.choices %}
+        <option value="{{ value }}"
+          {% if form.venue.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>
+          {{ label }}</option>
+      {% endfor %}
+    </select>
+    <input type="text" name="other_venue" id="other_venue"
+           class="hidden" placeholder="Write the venue"
+           value="{{ form.other_venue.value|default:'' }}">
+
+    <label>Date</label>
+    {{ form.date }}
+
+    <label>Time</label>
+    {{ form.time_slot }}
+
+    <label>Majlis Parcha</label>
+    {{ form.parcha }}
+
+    <label>After Majlis</label>
+    {{ form.after_majlis }}
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <script>
+    const TYPES = {
+      majlis: [["aza","Majlis e Aza"],["sayyum","Majlis e Sayyum"],["daswan","Majlis e Daswan"],
+               ["beeswan","Majlis e Beeswan"],["chehullum","Majlis e Chehullum"],
+               ["tarheem","Majlis e Tarheem"],["shashmahi","Majlis e Shashmahi"],
+               ["barsi","Majlis e Barsi"],["nauchandi","Nauchandi Majlis"],["other","Others"]],
+      mehfil: [["noor","Mehfil e Noor"],["sadeqain","Jashn e Sadeqain"],
+               ["abbas","Jashn e Abbas"],["other","Others"]]
+    };
+    const saved = {kind: "{{ form.kind.value|default:'majlis' }}",
+                   category: "{{ form.category.value|default:'' }}"};
+
+    const kind = document.getElementById("kind");
+    const category = document.getElementById("category");
+    const otherCat = document.getElementById("other_category");
+    const venue = document.getElementById("venue");
+    const otherVenue = document.getElementById("other_venue");
+    const isaal = document.getElementById("isaal");
+    const isaalBox = document.getElementById("isaal_box");
+    const nameBox = document.getElementById("marhoomeen_box");
+
+    function fillCategories() {
+      category.innerHTML = "";
+      TYPES[kind.value].forEach(([v, t]) => category.add(new Option(t, v)));
+      isaalBox.classList.toggle("hidden", kind.value === "mehfil");
+      if (kind.value === "mehfil") isaal.checked = false;
+      toggles();
+    }
+    function toggles() {
+      otherCat.classList.toggle("hidden", category.value !== "other");
+      otherVenue.classList.toggle("hidden", venue.value !== "");
+      nameBox.classList.toggle("hidden", !isaal.checked);
+    }
+
+    kind.value = saved.kind;
+    fillCategories();
+    if (saved.category) category.value = saved.category;
+    toggles();
+
+    kind.addEventListener("change", fillCategories);
+    category.addEventListener("change", toggles);
+    venue.addEventListener("change", toggles);
+    isaal.addEventListener("change", toggles);
+
+    document.getElementById("add_name").addEventListener("click", () => {
+      const input = document.createElement("input");
+      input.type = "text"; input.name = "marhoomeen"; input.placeholder = "Name of Marhoom";
+      document.getElementById("marhoomeen_list").appendChild(input);
+    });
+  </script>
+</body>
+</html>
