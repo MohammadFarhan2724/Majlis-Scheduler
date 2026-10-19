@@ -67,3 +67,47 @@ class Venue(models.Model):
 
     def __str__(self):
         return self.name_en
+
+class Booking(models.Model):
+    kind = models.CharField(max_length=10, choices=Kind.choices)
+    category = models.CharField(max_length=30)
+    other_category = models.CharField(max_length=100, blank=True)
+    organizer_name = models.CharField(max_length=100)
+    khitabat = models.CharField(max_length=100)
+    venue = models.ForeignKey(Venue, null=True, blank=True, on_delete=models.PROTECT)
+    other_venue = models.CharField(max_length=150, blank=True)
+    date = models.DateField()
+    time_slot = models.CharField(max_length=20, choices=TimeSlot.choices)
+    period = models.CharField(max_length=10, choices=Period.choices, editable=False)
+    parcha = models.ImageField(upload_to="parcha/")
+    isaal_e_sawaab = models.BooleanField(default=False)
+    after_majlis = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["date", "period"], name="one_per_period")
+        ]
+
+    def clean(self):
+        if self.category == "other" and not self.other_category:
+            raise ValidationError("Please write the type.")
+        if self.venue is None and not self.other_venue:
+            raise ValidationError("Please select a venue or write one.")
+
+    def save(self, *args, **kwargs):
+        self.period = SLOT_PERIOD[self.time_slot]  # set automatically
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.organizer_name} - {self.date} ({self.period})"
+
+
+class Marhoomeen(models.Model):
+    booking = models.ForeignKey(
+        Booking, related_name="marhoomeen", on_delete=models.CASCADE
+    )
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
