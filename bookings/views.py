@@ -4,7 +4,23 @@ from django.utils import timezone
 from .forms import BookingForm
 from .models import Booking, Marhoomeen
 
+from django.contrib.auth import get_user_model, login
+from django.contrib.auth.decorators import login_required
+from .forms import RegisterForm
 
+
+def register(request):
+    form = RegisterForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        user = get_user_model().objects.create_user(
+            username=form.cleaned_data["mobile"],
+            password=form.cleaned_data["password"],
+        )
+        login(request, user)
+        return redirect("booking_list")
+    return render(request, "bookings/register.html", {"form": form})
+
+@login_required
 def create_booking(request):
     form = BookingForm(request.POST or None, request.FILES or None)
     names = [n.strip() for n in request.POST.getlist("marhoomeen") if n.strip()]
@@ -15,7 +31,9 @@ def create_booking(request):
         else:
             try:
                 with transaction.atomic():
-                    booking = form.save()
+                    booking = form.save(commit=False)
+                    booking.owner = request.user
+                    booking.save()
                     Marhoomeen.objects.bulk_create(
                         [Marhoomeen(booking=booking, name=n) for n in names]
                     )

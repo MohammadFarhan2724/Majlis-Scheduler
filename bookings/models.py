@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from django.conf import settings
 
 
 class MajlisType(models.TextChoices):
@@ -83,6 +84,10 @@ class Booking(models.Model):
     isaal_e_sawaab = models.BooleanField(default=False)
     after_majlis = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE,
+        related_name="bookings",
+    )
 
     class Meta:
         constraints = [

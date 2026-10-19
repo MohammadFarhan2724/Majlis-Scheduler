@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register</title>
+  <style>
+    body { font-family: sans-serif; padding: 16px; max-width: 480px; margin: auto; }
+    input { width: 100%; padding: 10px; margin: 6px 0 12px; box-sizing: border-box; font-size: 16px; }
+    button { width: 100%; padding: 12px; font-size: 16px; }
+    .error { color: #b00020; }
+  </style>
+</head>
+<body>
+  <h2>Register</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create account</button>
+  </form>
+  <p>Already registered? <a href="{% url 'login' %}">Log in</a></p>
+</body>
+</html>
