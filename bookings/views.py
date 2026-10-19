@@ -26,6 +26,9 @@ def create_booking(request):
     return render(request, "bookings/form.html", {"form": form})
 
 
+from datetime import timedelta
+
 def booking_list(request):
-    bookings = Booking.objects.filter(date__gte=timezone.localdate()).order_by("date")
+    cutoff = timezone.localdate() - timedelta(days=1)
+    bookings = Booking.objects.filter(date__gte=cutoff).order_by("date")
     return render(request, "bookings/list.html", {"bookings": bookings})
