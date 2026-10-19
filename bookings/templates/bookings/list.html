@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Upcoming Majalis</title>
+  <style>
+    body { font-family: sans-serif; padding: 16px; max-width: 480px; margin: auto; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+    img { max-width: 100%; margin-top: 8px; border-radius: 6px; }
+    a.btn { display: block; text-align: center; padding: 12px; background: #222; color: #fff;
+            text-decoration: none; border-radius: 6px; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <h2>Upcoming Majalis & Mehfils</h2>
+  <a class="btn" href="{% url 'create_booking' %}">+ Schedule yours</a>
+
+  {% for b in bookings %}
+    <div class="card">
+      <strong>
+        {% if b.category == "other" %}{{ b.other_category }}{% else %}{{ b.category|title }}{% endif %}
+      </strong> ({{ b.get_kind_display }})<br>
+      {{ b.date }} – {{ b.get_time_slot_display }}<br>
+      Venue: {{ b.venue|default:b.other_venue }}<br>
+      Organizer: {{ b.organizer_name }}<br>
+      Khitabat: {{ b.khitabat }}
+      {% if b.marhoomeen.all %}
+        <br>Isaal e Sawaab: {% for m in b.marhoomeen.all %}{{ m.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+      {% endif %}
+      {% if b.after_majlis %}<br>After Majlis: {{ b.after_majlis }}{% endif %}
+      <img src="{{ b.parcha.url }}" alt="Majlis Parcha">
+    </div>
+  {% empty %}
+    <p>No upcoming majalis yet.</p>
+  {% endfor %}
+</body>
+</html>
