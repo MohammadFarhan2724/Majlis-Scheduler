@@ -16,6 +16,14 @@
   <h2>Upcoming Majalis & Mehfils</h2>
   <a class="btn" href="{% url 'create_booking' %}">+ Schedule yours</a>
 
+  {% if user.is_authenticated %}
+    <form method="post" action="{% url 'logout' %}">{% csrf_token %}
+      <button type="submit">Log out</button>
+    </form>
+  {% else %}
+    <a href="{% url 'login' %}">Log in</a> | <a href="{% url 'register' %}">Register</a>
+  {% endif %}
+
   {% for b in bookings %}
     <div class="card">
       <strong>
@@ -29,6 +37,17 @@
         <br>Isaal e Sawaab: {% for m in b.marhoomeen.all %}{{ m.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
       {% endif %}
       {% if b.after_majlis %}<br>After Majlis: {{ b.after_majlis }}{% endif %}
+
+      {% if b.owner_id == user.id %}
+        <br>
+        <a href="{% url 'edit_booking' b.pk %}">Edit</a>
+        <form method="post" action="{% url 'delete_booking' b.pk %}" style="display:inline"
+              onsubmit="return confirm('Delete this booking?')">
+          {% csrf_token %}
+          <button type="submit">Delete</button>
+        </form>
+      {% endif %}
+
       <img src="{{ b.parcha.url }}" alt="Majlis Parcha">
     </div>
   {% empty %}

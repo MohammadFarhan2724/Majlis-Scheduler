@@ -40,7 +40,7 @@ class BookingForm(forms.ModelForm):
             "khitabat", "venue", "other_venue", "date", "time_slot",
             "parcha", "isaal_e_sawaab", "after_majlis",
         ]
-        widgets = {"date": forms.DateInput(attrs={"type": "date"})}
+        widgets = {"date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d")}
 
     def clean(self):
         data = super().clean()

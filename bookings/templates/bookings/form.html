@@ -15,7 +15,7 @@
   </style>
 </head>
 <body>
-  <h2>Schedule a Majlis / Mehfil</h2>
+  <h2>{% if editing %}Edit booking{% else %}Schedule a Majlis / Mehfil{% endif %}</h2>
 
   {% if form.errors %}
     <div class="error">
@@ -47,7 +47,9 @@
         {% if form.isaal_e_sawaab.value %}checked{% endif %}> Isaal e Sawaab</label>
       <div id="marhoomeen_box" class="hidden">
         <div id="marhoomeen_list">
-          <input type="text" name="marhoomeen" placeholder="Name of Marhoom">
+          {% for n in names %}
+            <input type="text" name="marhoomeen" value="{{ n }}" placeholder="Name of Marhoom">
+          {% endfor %}
         </div>
         <button type="button" id="add_name">+ Add more</button>
       </div>
@@ -80,7 +82,7 @@
     <label>After Majlis</label>
     {{ form.after_majlis }}
 
-    <button type="submit">Submit</button>
+    <button type="submit">{% if editing %}Save changes{% else %}Submit{% endif %}</button>
   </form>
 
   <script>
