@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 import os
+import sys
 import dj_database_url
 from dotenv import load_dotenv
 from pathlib import Path
@@ -83,6 +84,13 @@ DATABASES = {
         conn_max_age=600,
     )
 }
+if "test" in sys.argv and not os.environ.get("CI"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # Password validation
