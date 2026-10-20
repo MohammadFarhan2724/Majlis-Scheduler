@@ -148,6 +148,9 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "booking_list"
 LOGOUT_REDIRECT_URL = "booking_list"
 
+if "test" in sys.argv:
+    PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",
