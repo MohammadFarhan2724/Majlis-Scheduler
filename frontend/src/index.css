@@ -50,3 +50,126 @@ html[lang='ur'] body {
   background: var(--accent);
   color: #fff;
 }
+
+.page h1 {
+  font-size: 1.6rem;
+  margin: 8px 0 12px;
+}
+
+.field {
+  margin-bottom: 18px;
+}
+
+.field label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.field input {
+  width: 100%;
+  min-height: 52px;
+  font-size: 1.1rem;
+  padding: 8px 12px;
+  border: 2px solid #8a8a8a;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+}
+
+.field input:focus {
+  outline: 3px solid var(--accent);
+  border-color: var(--accent);
+}
+
+.hint {
+  font-size: 0.9rem;
+  color: #555;
+  margin-top: 4px;
+}
+
+.password-field {
+  display: flex;
+  gap: 8px;
+}
+
+.password-field input {
+  flex: 1;
+  min-width: 0;
+  min-height: 52px;
+  font-size: 1.1rem;
+  padding: 8px 12px;
+  border: 2px solid #8a8a8a;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+}
+
+.password-field input:focus {
+  outline: 3px solid var(--accent);
+  border-color: var(--accent);
+}
+
+.show-btn {
+  min-width: 88px;
+  font-size: 1rem;
+  border: 2px solid var(--accent);
+  background: #fff;
+  color: var(--accent);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.btn-primary,
+.btn-secondary {
+  display: block;
+  width: 100%;
+  min-height: 52px;
+  padding: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-secondary {
+  background: #fff;
+  color: var(--accent);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.stack {
+  display: grid;
+  gap: 12px;
+}
+
+.error-box {
+  background: #fdecea;
+  color: #8a1c12;
+  border: 2px solid #d9534f;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.switch-link {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.switch-link a {
+  color: var(--accent);
+  font-weight: 700;
+}

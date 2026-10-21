@@ -1,14 +1,21 @@
-import { useTranslation } from 'react-i18next'
+import { Route, Routes } from 'react-router-dom'
+import AuthProvider from './auth/AuthProvider'
 import LanguageSwitcher from './components/LanguageSwitcher'
+import Home from './pages/Home'
+import Login from './pages/Login'
+import Register from './pages/Register'
 
 export default function App() {
-  const { t } = useTranslation()
-
   return (
-    <div className="page">
-      <LanguageSwitcher />
-      <h1>{t('appName')}</h1>
-      <p>{t('tagline')}</p>
-    </div>
+    <AuthProvider>
+      <div className="page">
+        <LanguageSwitcher />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </div>
+    </AuthProvider>
   )
 }

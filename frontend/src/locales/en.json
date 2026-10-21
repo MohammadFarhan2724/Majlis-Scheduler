@@ -1,4 +1,17 @@
 {
   "appName": "Majlis Scheduler",
-  "tagline": "Announce and find majalis and mehfils in your city"
+  "tagline": "Announce and find majalis and mehfils in your city",
+  "login": "Log in",
+  "register": "Create account",
+  "mobile": "Mobile number",
+  "mobileHelp": "10-digit mobile number",
+  "password": "Password",
+  "passwordHelp": "At least 8 characters",
+  "show": "Show",
+  "hide": "Hide",
+  "newHere": "New here?",
+  "haveAccount": "Already have an account?",
+  "logout": "Log out",
+  "pleaseWait": "Please wait...",
+  "errorGeneric": "Something went wrong. Please try again."
 }
