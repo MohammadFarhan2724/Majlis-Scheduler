@@ -5,10 +5,10 @@ from bookings.models import Booking
 
 
 class Command(BaseCommand):
-    help = "Delete bookings older than 1 day"
+    help = "Delete bookings older than 7 days"
 
     def handle(self, *args, **options):
-        cutoff = timezone.localdate() - timedelta(days=1)
+        cutoff = timezone.localdate() - timedelta(days=7)
         old = Booking.objects.filter(date__lt=cutoff)
         count = old.count()
         for b in old:

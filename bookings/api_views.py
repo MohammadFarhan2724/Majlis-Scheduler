@@ -9,7 +9,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils import timezone
 from rest_framework import permissions, viewsets
 from rest_framework.authtoken.models import Token
-from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes, action
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 
@@ -24,8 +24,6 @@ from .throttles import (
     BookingCreateThrottle, LoginThrottle, PasswordChangeThrottle,
     RegisterThrottle, ResetRequestThrottle,
 )
-
-
 class IsOwnerOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return request.method in permissions.SAFE_METHODS or (
@@ -41,10 +39,21 @@ class BookingViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = Booking.objects.select_related("venue").prefetch_related("marhoomeen")
+        today = timezone.localdate()
         if self.action == "list":
-            cutoff = timezone.localdate() - timedelta(days=1)
-            qs = qs.filter(date__gte=cutoff)
+            qs = qs.filter(date__gte=today)
+        elif self.action == "mine":
+            qs = qs.filter(owner=self.request.user)
+            if self.request.query_params.get("tab") == "completed":
+                return qs.filter(date__lt=today).order_by("-date")
+            qs = qs.filter(date__gte=today)
         return qs.order_by("date")
+
+    @action(detail=False, methods=["get"],
+            permission_classes=[permissions.IsAuthenticated])
+    def mine(self, request):
+        serializer = self.get_serializer(self.get_queryset(), many=True)
+        return Response(serializer.data)
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

@@ -14,6 +14,7 @@ from .hijri import hijri_for
 
 from django.core.cache import cache
 from .models import AccountFlag, PasswordResetRequest
+from django.core.management import call_command
 
 User = get_user_model()
 TEMP_MEDIA = tempfile.mkdtemp()
@@ -388,3 +389,33 @@ class OptionsApiTests(ApiTestBase):
         self.assertEqual(by_code["09:00"], "morning")
         self.assertEqual(by_code["after_zohrain"], "afternoon")
         self.assertEqual(by_code["19:00"], "evening")
+
+class MyBookingsApiTests(ApiTestBase):
+    def test_needs_login(self):
+        r = self.client.get("/api/bookings/mine/")
+        self.assertEqual(r.status_code, 401)
+
+    def test_upcoming_and_completed_tabs(self):
+        upcoming = make_booking(self.user1, day=DAY)
+        done = make_booking(self.user1, day=date.today() - timedelta(days=2))
+        make_booking(self.user2, "19:00", day=DAY)  # someone else's
+        self.login_as(self.user1)
+        up = self.client.get("/api/bookings/mine/?tab=upcoming")
+        self.assertEqual([b["id"] for b in up.data], [upcoming.pk])
+        comp = self.client.get("/api/bookings/mine/?tab=completed")
+        self.assertEqual([b["id"] for b in comp.data], [done.pk])
+
+    def test_yesterday_is_not_on_home_list(self):
+        make_booking(self.user1, day=date.today() - timedelta(days=1))
+        r = self.client.get("/api/bookings/")
+        self.assertEqual(len(r.data), 0)
+
+
+class CleanupTests(ApiTestBase):
+    def test_deletes_only_after_seven_days(self):
+        old = make_booking(self.user1, day=date.today() - timedelta(days=8))
+        recent = make_booking(
+            self.user1, "19:00", day=date.today() - timedelta(days=3))
+        call_command("delete_old_bookings")
+        self.assertFalse(Booking.objects.filter(pk=old.pk).exists())
+        self.assertTrue(Booking.objects.filter(pk=recent.pk).exists())
