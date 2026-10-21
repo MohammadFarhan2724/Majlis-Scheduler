@@ -9,7 +9,7 @@ from django.views.decorators.http import require_POST
 
 from .forms import BookingForm, RegisterForm
 from .models import Booking, Marhoomeen
-
+from .hijri import hijri_for, hijri_month_name, load_months
 
 def register(request):
     form = RegisterForm(request.POST or None)
@@ -69,7 +69,20 @@ def delete_booking(request, pk):
     return redirect("booking_list")
 
 
+def _hijri_text(day, months):
+    h = hijri_for(day, months)
+    return {**h, "month_name": hijri_month_name(h["month"])}
+
+
 def booking_list(request):
-    cutoff = timezone.localdate() - timedelta(days=1)
-    bookings = Booking.objects.filter(date__gte=cutoff).order_by("date")
-    return render(request, "bookings/list.html", {"bookings": bookings})
+    today = timezone.localdate()
+    months = load_months()
+    cutoff = today - timedelta(days=1)
+    bookings = list(Booking.objects.filter(date__gte=cutoff).order_by("date"))
+    for b in bookings:
+        b.hijri = _hijri_text(b.date, months)
+    return render(request, "bookings/list.html", {
+        "bookings": bookings,
+        "today": today,
+        "hijri_today": _hijri_text(today, months),
+    })

@@ -21,3 +21,13 @@ def hijri_for(day, months=None):
     # no row for this date yet: use the library estimate
     h = Gregorian(day.year, day.month, day.day).to_hijri()
     return {"day": h.day, "month": h.month, "year": h.year}
+
+HIJRI_MONTHS_EN = [
+    "Muharram", "Safar", "Rabi ul Awwal", "Rabi ul Aakhir",
+    "Jamadi ul Awwal", "Jamadi ul Aakhir", "Rajab", "Shaban",
+    "Ramazan", "Shawwal", "Zilqad", "Zilhijja",
+]
+
+
+def hijri_month_name(month):
+    return HIJRI_MONTHS_EN[month - 1]

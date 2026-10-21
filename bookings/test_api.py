@@ -248,3 +248,39 @@ class OwnerLockApiTests(ApiTestBase):
             year=1445, month=9, start_date=date(2024, 3, 12))
             r = self.client.get(f"/api/bookings/{booking.pk}/")
             self.assertEqual(r.data["hijri_date"]["day"], 1)
+
+    class CalendarApiTests(ApiTestBase):
+        def test_shows_taken_period(self):
+            make_booking(self.user1, "09:00", day=date(2026, 11, 10))
+            r = self.client.get("/api/calendar/?year=2026&month=11")
+            self.assertEqual(r.status_code, 200)
+            self.assertEqual(len(r.data), 30)
+            day = r.data[9]
+            self.assertEqual(day["date"], "2026-11-10")
+            self.assertEqual(day["taken"], ["morning"])
+            self.assertFalse(day["full"])
+
+        def test_day_with_two_bookings_is_full(self):
+            make_booking(self.user1, "09:00", day=date(2026, 11, 10))
+            make_booking(self.user1, "19:00", day=date(2026, 11, 10))
+            r = self.client.get("/api/calendar/?year=2026&month=11")
+            self.assertTrue(r.data[9]["full"])
+
+        def test_bad_month_rejected(self):
+            r = self.client.get("/api/calendar/?year=2026&month=13")
+            self.assertEqual(r.status_code, 400)
+
+
+    class TodayHijriApiTests(ApiTestBase):
+        def test_today_endpoint(self):
+            r = self.client.get("/api/today/")
+            self.assertEqual(r.status_code, 200)
+            self.assertIn("month_name", r.data["hijri"])
+
+        def test_hijri_endpoint(self):
+            r = self.client.get("/api/hijri/?date=2024-03-11")
+            self.assertEqual(r.data["hijri"]["month_name"], "Ramazan")
+
+        def test_hijri_endpoint_bad_date(self):
+            r = self.client.get("/api/hijri/?date=abc")
+            self.assertEqual(r.status_code, 400)

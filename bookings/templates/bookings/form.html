@@ -12,6 +12,20 @@
     button { margin-top: 20px; padding: 12px; width: 100%; font-size: 16px; }
     .error { color: #b00020; margin-top: 10px; }
     .hidden { display: none; }
+    const dateInput = document.getElementById("id_date");
+    const hijriText = document.getElementById("hijri_text");
+    function showHijri() {
+    if (!dateInput.value) { hijriText.textContent = ""; return; }
+      fetch("/api/hijri/?date=" + dateInput.value)
+      .then(r => r.json())
+      .then(d => {
+      hijriText.textContent = d.hijri
+        ? "Islamic date: " + d.hijri.day + " " + d.hijri.month_name + " " + d.hijri.year
+        : "";
+    });
+}
+dateInput.addEventListener("change", showHijri);
+showHijri();
   </style>
 </head>
 <body>
@@ -71,7 +85,8 @@
            value="{{ form.other_venue.value|default:'' }}">
 
     <label>Date</label>
-    {{ form.date }}
+      {{ form.date }}
+    <div id="hijri_text" style="margin-top:6px; font-size:18px; font-weight:bold;"></div>
 
     <label>Time</label>
     {{ form.time_slot }}

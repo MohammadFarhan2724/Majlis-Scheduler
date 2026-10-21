@@ -10,10 +10,18 @@
     img { max-width: 100%; margin-top: 8px; border-radius: 6px; }
     a.btn { display: block; text-align: center; padding: 12px; background: #222; color: #fff;
             text-decoration: none; border-radius: 6px; margin-bottom: 16px; }
+    .today { background: #f4f4f4; border-radius: 12px; padding: 16px;
+         text-align: center; margin-bottom: 16px; }
+    .today .greg { font-size: 20px; }
+    .today .hijri { font-size: 24px; font-weight: bold; margin-top: 4px; }
   </style>
 </head>
 <body>
   <h2>Upcoming Majalis & Mehfils</h2>
+  <div class="today">
+  <div class="greg">{{ today|date:"l, j F Y" }}</div>
+  <div class="hijri">{{ hijri_today.day }} {{ hijri_today.month_name }} {{ hijri_today.year }} AH</div>
+</div>
   <a class="btn" href="{% url 'create_booking' %}">+ Schedule yours</a>
 
   {% if user.is_authenticated %}
@@ -29,7 +37,7 @@
       <strong>
         {% if b.category == "other" %}{{ b.other_category }}{% else %}{{ b.category|title }}{% endif %}
       </strong> ({{ b.get_kind_display }})<br>
-      {{ b.date }} – {{ b.get_time_slot_display }}<br>
+      {{ b.date }} ({{ b.hijri.day }} {{ b.hijri.month_name }} {{ b.hijri.year }}) – {{ b.get_time_slot_display }}<br>
       Venue: {{ b.venue|default:b.other_venue }}<br>
       Organizer: {{ b.organizer_name }}<br>
       Khitabat: {{ b.khitabat }}

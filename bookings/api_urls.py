@@ -10,5 +10,8 @@ router.register("venues", api_views.VenueViewSet, basename="api-venue")
 urlpatterns = [
     path("register/", api_views.register_api),
     path("login/", api_views.login_api),
+    path("calendar/", api_views.calendar_api),
+    path("today/", api_views.today_api),
+    path("hijri/", api_views.hijri_api),
     path("", include(router.urls)),
 ]

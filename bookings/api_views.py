@@ -1,4 +1,6 @@
-from datetime import timedelta
+import calendar
+from collections import defaultdict
+from datetime import date, timedelta
 
 from django.contrib.auth import authenticate, get_user_model
 from django.utils import timezone
@@ -9,9 +11,9 @@ from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 
 from .forms import RegisterForm
+from .hijri import hijri_for, hijri_month_name, load_months
 from .models import Booking, Venue
 from .serializers import BookingSerializer, VenueSerializer
-from .hijri import load_months
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -33,7 +35,7 @@ class BookingViewSet(viewsets.ModelViewSet):
             cutoff = timezone.localdate() - timedelta(days=1)
             qs = qs.filter(date__gte=cutoff)
         return qs.order_by("date")
-    
+
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context["hijri_months"] = load_months()
@@ -79,3 +81,59 @@ def login_api(request):
         return Response({"detail": "Wrong mobile number or password."}, status=400)
     token, _ = Token.objects.get_or_create(user=user)
     return Response({"token": token.key})
+
+
+def hijri_with_name(day, months=None):
+    h = hijri_for(day, months)
+    return {**h, "month_name": hijri_month_name(h["month"])}
+
+
+@api_view(["GET"])
+@permission_classes([permissions.AllowAny])
+def today_api(request):
+    today = timezone.localdate()
+    return Response({"date": today.isoformat(), "hijri": hijri_with_name(today)})
+
+
+@api_view(["GET"])
+@permission_classes([permissions.AllowAny])
+def hijri_api(request):
+    try:
+        day = date.fromisoformat(request.query_params.get("date", ""))
+        hijri = hijri_with_name(day)
+    except (ValueError, OverflowError):
+        return Response({"detail": "Use date=YYYY-MM-DD."}, status=400)
+    return Response({"date": day.isoformat(), "hijri": hijri})
+
+
+@api_view(["GET"])
+@permission_classes([permissions.AllowAny])
+def calendar_api(request):
+    today = timezone.localdate()
+    try:
+        year = int(request.query_params.get("year", today.year))
+        month = int(request.query_params.get("month", today.month))
+        first = date(year, month, 1)
+    except ValueError:
+        return Response({"detail": "Invalid year or month."}, status=400)
+
+    days_in_month = calendar.monthrange(year, month)[1]
+    last = date(year, month, days_in_month)
+
+    taken = defaultdict(list)
+    rows = Booking.objects.filter(date__range=(first, last)).values("date", "period")
+    for row in rows:
+        taken[row["date"]].append(row["period"])
+
+    months = load_months()
+    result = []
+    for n in range(days_in_month):
+        day = first + timedelta(days=n)
+        periods = sorted(taken.get(day, []))
+        result.append({
+            "date": day.isoformat(),
+            "hijri": hijri_with_name(day, months),
+            "taken": periods,
+            "full": len(periods) >= 2,
+        })
+    return Response(result)
