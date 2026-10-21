@@ -2,6 +2,7 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 from rest_framework import serializers
 
+from .hijri import hijri_for
 from .models import (
     SLOT_PERIOD, Booking, MajlisType, Marhoomeen, MehfilType, Venue,
 )
@@ -21,14 +22,15 @@ class BookingSerializer(serializers.ModelSerializer):
     )
     venue_detail = VenueSerializer(source="venue", read_only=True)
     is_mine = serializers.SerializerMethodField()
+    hijri_date = serializers.SerializerMethodField()
 
     class Meta:
         model = Booking
         fields = [
             "id", "kind", "category", "other_category", "organizer_name",
             "khitabat", "venue", "venue_detail", "other_venue", "date",
-            "time_slot", "period", "parcha", "isaal_e_sawaab", "marhoomeen",
-            "marhoomeen_names", "after_majlis", "is_mine",
+            "hijri_date", "time_slot", "period", "parcha", "isaal_e_sawaab",
+            "marhoomeen", "marhoomeen_names", "after_majlis", "is_mine",
         ]
         read_only_fields = ["period"]
 
@@ -44,6 +46,9 @@ class BookingSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         user = getattr(request, "user", None)
         return bool(user and user.is_authenticated and obj.owner_id == user.id)
+
+    def get_hijri_date(self, obj):
+        return hijri_for(obj.date, self.context.get("hijri_months"))
 
     def validate(self, attrs):
         inst = self.instance

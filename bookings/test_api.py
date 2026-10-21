@@ -9,7 +9,8 @@ from django.test import override_settings
 from PIL import Image
 from rest_framework.test import APITestCase
 
-from .models import Booking, Venue
+from .models import Booking, Venue, HijriMonth
+from .hijri import hijri_for
 
 User = get_user_model()
 TEMP_MEDIA = tempfile.mkdtemp()
@@ -221,3 +222,29 @@ class OwnerLockApiTests(ApiTestBase):
         r = self.client.delete(self.url)
         self.assertEqual(r.status_code, 204)
         self.assertFalse(Booking.objects.filter(pk=self.booking.pk).exists())
+
+    class HijriTests(ApiTestBase):
+        def test_library_fallback(self):
+            self.assertEqual(
+            hijri_for(date(2024, 3, 11), []),
+            {"day": 1, "month": 9, "year": 1445})
+
+        def test_table_decides_the_day(self):
+            months = [
+                HijriMonth(year=1445, month=8, start_date=date(2024, 2, 11)),
+                HijriMonth(year=1445, month=9, start_date=date(2024, 3, 12)),
+            ]
+            # Shaban had 30 days, because Ramadan starts on 12 March
+            self.assertEqual(
+                hijri_for(date(2024, 3, 11), months),
+                {"day": 30, "month": 8, "year": 1445})
+            self.assertEqual(
+                hijri_for(date(2024, 3, 12), months),
+                {"day": 1, "month": 9, "year": 1445})
+
+        def test_api_uses_the_table(self):
+            booking = make_booking(self.user1, day=date(2024, 3, 12))
+            HijriMonth.objects.create(
+            year=1445, month=9, start_date=date(2024, 3, 12))
+            r = self.client.get(f"/api/bookings/{booking.pk}/")
+            self.assertEqual(r.data["hijri_date"]["day"], 1)

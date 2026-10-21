@@ -2,6 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 class MajlisType(models.TextChoices):
@@ -116,3 +117,22 @@ class Marhoomeen(models.Model):
 
     def __str__(self):
         return self.name
+
+class HijriMonth(models.Model):
+    year = models.IntegerField()  # example: 1448
+    month = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(12)])  # 1 = Muharram
+    start_date = models.DateField(
+        help_text="Gregorian date of the 1st of this month (moon sighting)")
+    confirmed = models.BooleanField(
+        default=False, help_text="Tick after the moon is announced")
+
+    class Meta:
+        ordering = ["start_date"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["year", "month"], name="one_row_per_hijri_month")
+        ]
+
+    def __str__(self):
+        return f"{self.year}-{self.month:02d} starts {self.start_date}"

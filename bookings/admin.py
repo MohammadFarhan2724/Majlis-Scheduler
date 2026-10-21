@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Booking, Marhoomeen, Venue
+from .models import Booking, Marhoomeen, Venue, HijriMonth
 
 
 class MarhoomeenInline(admin.TabularInline):
@@ -16,3 +16,9 @@ class BookingAdmin(admin.ModelAdmin):
 @admin.register(Venue)
 class VenueAdmin(admin.ModelAdmin):
     list_display = ("name_en", "city")
+
+@admin.register(HijriMonth)
+class HijriMonthAdmin(admin.ModelAdmin):
+    list_display = ("year", "month", "start_date", "confirmed")
+    list_filter = ("confirmed",)
+    ordering = ("start_date",)

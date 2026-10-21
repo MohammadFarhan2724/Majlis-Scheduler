@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from .forms import RegisterForm
 from .models import Booking, Venue
 from .serializers import BookingSerializer, VenueSerializer
+from .hijri import load_months
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -32,6 +33,11 @@ class BookingViewSet(viewsets.ModelViewSet):
             cutoff = timezone.localdate() - timedelta(days=1)
             qs = qs.filter(date__gte=cutoff)
         return qs.order_by("date")
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["hijri_months"] = load_months()
+        return context
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
