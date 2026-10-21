@@ -390,6 +390,12 @@ class OptionsApiTests(ApiTestBase):
         self.assertEqual(by_code["after_zohrain"], "afternoon")
         self.assertEqual(by_code["19:00"], "evening")
 
+    def test_venue_has_map_link(self):
+        Venue.objects.create(name_en="Hall", map_url="https://maps.app.goo.gl/abc")
+        r = self.client.get("/api/options/")
+        self.assertEqual(
+            r.data["venues"][0]["map_url"], "https://maps.app.goo.gl/abc")
+
 class MyBookingsApiTests(ApiTestBase):
     def test_needs_login(self):
         r = self.client.get("/api/bookings/mine/")

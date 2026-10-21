@@ -12,7 +12,7 @@ from .images import clean_image
 class VenueSerializer(serializers.ModelSerializer):
     class Meta:
         model = Venue
-        fields = ["id", "name_en", "name_hi", "name_ur", "city"]
+        fields = ["id", "name_en", "name_hi", "name_ur", "city", "map_url"]
 
 
 class BookingSerializer(serializers.ModelSerializer):

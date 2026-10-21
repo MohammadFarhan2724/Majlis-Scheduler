@@ -66,6 +66,7 @@ class Venue(models.Model):
     name_hi = models.CharField(max_length=100, blank=True)
     name_ur = models.CharField(max_length=100, blank=True)
     city = models.CharField(max_length=50, default="Barabanki")
+    map_url = models.URLField(blank=True, help_text="Google Maps link of the venue")
 
     def __str__(self):
         return self.name_en
