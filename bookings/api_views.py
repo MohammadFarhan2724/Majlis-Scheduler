@@ -15,7 +15,10 @@ from rest_framework.response import Response
 
 from .forms import RegisterForm
 from .hijri import hijri_for, hijri_month_name, load_months
-from .models import AccountFlag, Booking, PasswordResetRequest, Venue
+from .models import (
+    SLOT_PERIOD, AccountFlag, Booking, MajlisType, MehfilType,
+    PasswordResetRequest, TimeSlot, Venue,
+)
 from .serializers import BookingSerializer, VenueSerializer
 from .throttles import (
     BookingCreateThrottle, LoginThrottle, PasswordChangeThrottle,
@@ -187,3 +190,19 @@ def calendar_api(request):
             "full": len(periods) >= 2,
         })
     return Response(result)
+
+@api_view(["GET"])
+@permission_classes([permissions.AllowAny])
+def options_api(request):
+    def as_list(choices):
+        return [{"code": code, "label": str(label)} for code, label in choices]
+
+    return Response({
+        "majlis_types": as_list(MajlisType.choices),
+        "mehfil_types": as_list(MehfilType.choices),
+        "time_slots": [
+            {"code": code, "label": str(label), "period": SLOT_PERIOD[code]}
+            for code, label in TimeSlot.choices
+        ],
+        "venues": VenueSerializer(Venue.objects.order_by("id"), many=True).data,
+    })

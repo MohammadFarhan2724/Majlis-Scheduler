@@ -369,3 +369,22 @@ class PasswordTests(ApiTestBase):
         self.assertTrue(AccountFlag.objects.get(user=self.user1).must_change_password)
         req.refresh_from_db()
         self.assertTrue(req.handled)
+
+class OptionsApiTests(ApiTestBase):
+    def test_lists_are_sent(self):
+        Venue.objects.create(name_en="Ghulam Askari Hall")
+        r = self.client.get("/api/options/")
+        self.assertEqual(r.status_code, 200)
+        majlis = [t["code"] for t in r.data["majlis_types"]]
+        mehfil = [t["code"] for t in r.data["mehfil_types"]]
+        self.assertIn("aza", majlis)
+        self.assertIn("other", majlis)
+        self.assertIn("noor", mehfil)
+        self.assertEqual(len(r.data["venues"]), 1)
+
+    def test_every_slot_has_its_period(self):
+        r = self.client.get("/api/options/")
+        by_code = {s["code"]: s["period"] for s in r.data["time_slots"]}
+        self.assertEqual(by_code["09:00"], "morning")
+        self.assertEqual(by_code["after_zohrain"], "afternoon")
+        self.assertEqual(by_code["19:00"], "evening")
