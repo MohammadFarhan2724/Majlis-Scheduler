@@ -6,6 +6,7 @@ from .hijri import hijri_for
 from .models import (
     SLOT_PERIOD, Booking, MajlisType, Marhoomeen, MehfilType, Venue,
 )
+from .images import clean_image
 
 
 class VenueSerializer(serializers.ModelSerializer):
@@ -49,6 +50,9 @@ class BookingSerializer(serializers.ModelSerializer):
 
     def get_hijri_date(self, obj):
         return hijri_for(obj.date, self.context.get("hijri_months"))
+
+    def validate_parcha(self, value):
+        return clean_image(value)
 
     def validate(self, attrs):
         inst = self.instance

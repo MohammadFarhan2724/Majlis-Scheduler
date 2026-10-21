@@ -13,5 +13,7 @@ urlpatterns = [
     path("calendar/", api_views.calendar_api),
     path("today/", api_views.today_api),
     path("hijri/", api_views.hijri_api),
+    path("password-reset-request/", api_views.password_reset_request_api),
+    path("change-password/", api_views.change_password_api),
     path("", include(router.urls)),
 ]

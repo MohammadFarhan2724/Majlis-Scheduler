@@ -136,3 +136,20 @@ class HijriMonth(models.Model):
 
     def __str__(self):
         return f"{self.year}-{self.month:02d} starts {self.start_date}"
+
+class AccountFlag(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="flag")
+    must_change_password = models.BooleanField(default=False)
+
+
+class PasswordResetRequest(models.Model):
+    mobile = models.CharField(max_length=10)
+    created_at = models.DateTimeField(auto_now_add=True)
+    handled = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.mobile} ({'done' if self.handled else 'waiting'})"

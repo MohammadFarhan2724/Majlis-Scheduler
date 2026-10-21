@@ -158,4 +158,17 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
     ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "1000/hour",
+        "user": "2000/hour",
+        "login": "10/hour",
+        "register": "10/hour",
+        "password_reset": "5/day",
+        "password_change": "10/hour",
+        "booking_create": "10/day",
+    },
 }

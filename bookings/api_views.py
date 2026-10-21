@@ -1,19 +1,26 @@
 import calendar
+import re
 from collections import defaultdict
 from datetime import date, timedelta
 
 from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils import timezone
 from rest_framework import permissions, viewsets
 from rest_framework.authtoken.models import Token
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 
 from .forms import RegisterForm
 from .hijri import hijri_for, hijri_month_name, load_months
-from .models import Booking, Venue
+from .models import AccountFlag, Booking, PasswordResetRequest, Venue
 from .serializers import BookingSerializer, VenueSerializer
+from .throttles import (
+    BookingCreateThrottle, LoginThrottle, PasswordChangeThrottle,
+    RegisterThrottle, ResetRequestThrottle,
+)
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -41,6 +48,11 @@ class BookingViewSet(viewsets.ModelViewSet):
         context["hijri_months"] = load_months()
         return context
 
+    def get_throttles(self):
+        if self.action == "create":
+            return [BookingCreateThrottle()]
+        return super().get_throttles()
+
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
@@ -57,6 +69,7 @@ class VenueViewSet(viewsets.ReadOnlyModelViewSet):
 
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
+@throttle_classes([RegisterThrottle])
 def register_api(request):
     form = RegisterForm(request.data)
     if not form.is_valid():
@@ -72,6 +85,7 @@ def register_api(request):
 
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
+@throttle_classes([LoginThrottle])
 def login_api(request):
     user = authenticate(
         username=request.data.get("mobile", ""),
@@ -80,6 +94,42 @@ def login_api(request):
     if user is None:
         return Response({"detail": "Wrong mobile number or password."}, status=400)
     token, _ = Token.objects.get_or_create(user=user)
+    must_change = AccountFlag.objects.filter(
+        user=user, must_change_password=True).exists()
+    return Response({"token": token.key, "must_change_password": must_change})
+
+@api_view(["POST"])
+@permission_classes([permissions.AllowAny])
+@throttle_classes([ResetRequestThrottle])
+def password_reset_request_api(request):
+    mobile = str(request.data.get("mobile", "")).strip()
+    if not re.fullmatch(r"[6-9]\d{9}", mobile):
+        return Response(
+            {"mobile": ["Enter a valid 10-digit mobile number."]}, status=400)
+    exists = get_user_model().objects.filter(username=mobile).exists()
+    waiting = PasswordResetRequest.objects.filter(mobile=mobile, handled=False)
+    if exists and not waiting.exists():
+        PasswordResetRequest.objects.create(mobile=mobile)
+    # same answer whether the number exists or not
+    return Response({"detail": "Request received. We will contact you on this number."})
+
+@api_view(["POST"])
+@permission_classes([permissions.IsAuthenticated])
+@throttle_classes([PasswordChangeThrottle])
+def change_password_api(request):
+    old = request.data.get("old_password", "")
+    new = request.data.get("new_password", "")
+    if not request.user.check_password(old):
+        return Response({"old_password": ["Wrong password."]}, status=400)
+    try:
+        validate_password(new, request.user)
+    except DjangoValidationError as e:
+        return Response({"new_password": list(e.messages)}, status=400)
+    request.user.set_password(new)
+    request.user.save()
+    AccountFlag.objects.filter(user=request.user).update(must_change_password=False)
+    Token.objects.filter(user=request.user).delete()
+    token = Token.objects.create(user=request.user)
     return Response({"token": token.key})
 
 

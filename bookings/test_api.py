@@ -12,6 +12,9 @@ from rest_framework.test import APITestCase
 from .models import Booking, Venue, HijriMonth
 from .hijri import hijri_for
 
+from django.core.cache import cache
+from .models import AccountFlag, PasswordResetRequest
+
 User = get_user_model()
 TEMP_MEDIA = tempfile.mkdtemp()
 DAY = date.today() + timedelta(days=5)
@@ -57,6 +60,7 @@ class ApiTestBase(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
 
     def setUp(self):
+        cache.clear()
         self.user1 = User.objects.create_user("9000000001", password=PASSWORD)
         self.user2 = User.objects.create_user("9000000002", password=PASSWORD)
 
@@ -145,8 +149,7 @@ class BookingApiTests(ApiTestBase):
 
     def test_isaal_needs_a_name(self):
         self.login_as(self.user1)
-        r = self.client.post(
-            "/api/bookings/", payload(isaal_e_sawaab="true"), format="multipart")
+        r = self.client.post("/api/bookings/", payload(isaal_e_sawaab="true"), format="multipart")
         self.assertEqual(r.status_code, 400)
         self.assertIn("marhoomeen_names", r.data)
 
@@ -159,24 +162,20 @@ class BookingApiTests(ApiTestBase):
 
     def test_other_category_needs_text(self):
         self.login_as(self.user1)
-        r = self.client.post(
-            "/api/bookings/", payload(category="other"), format="multipart")
+        r = self.client.post("/api/bookings/", payload(category="other"), format="multipart")
         self.assertEqual(r.status_code, 400)
         self.assertIn("other_category", r.data)
 
     def test_venue_or_other_venue_needed(self):
         self.login_as(self.user1)
-        r = self.client.post(
-            "/api/bookings/", payload(other_venue=""), format="multipart")
+        r = self.client.post("/api/bookings/", payload(other_venue=""), format="multipart")
         self.assertEqual(r.status_code, 400)
         self.assertIn("other_venue", r.data)
 
     def test_fixed_venue_works(self):
         venue = Venue.objects.create(name_en="Ghulam Askari Hall")
         self.login_as(self.user1)
-        r = self.client.post(
-            "/api/bookings/",
-            payload(other_venue="", venue=venue.pk), format="multipart")
+        r = self.client.post("/api/bookings/", payload(other_venue="", venue=venue.pk), format="multipart")
         self.assertEqual(r.status_code, 201)
         self.assertEqual(r.data["venue_detail"]["name_en"], "Ghulam Askari Hall")
 
@@ -223,64 +222,150 @@ class OwnerLockApiTests(ApiTestBase):
         self.assertEqual(r.status_code, 204)
         self.assertFalse(Booking.objects.filter(pk=self.booking.pk).exists())
 
-    class HijriTests(ApiTestBase):
-        def test_library_fallback(self):
-            self.assertEqual(
-            hijri_for(date(2024, 3, 11), []),
+class HijriTests(ApiTestBase):
+    def test_library_fallback(self):
+        self.assertEqual(
+        hijri_for(date(2024, 3, 11), []),
+        {"day": 1, "month": 9, "year": 1445})
+
+    def test_table_decides_the_day(self):
+        months = [
+            HijriMonth(year=1445, month=8, start_date=date(2024, 2, 11)),
+            HijriMonth(year=1445, month=9, start_date=date(2024, 3, 12)),
+        ]
+        # Shaban had 30 days, because Ramadan starts on 12 March
+        self.assertEqual(hijri_for(date(2024, 3, 11), months),
+        {"day": 30, "month": 8, "year": 1445})
+        self.assertEqual(
+            hijri_for(date(2024, 3, 12), months),
             {"day": 1, "month": 9, "year": 1445})
 
-        def test_table_decides_the_day(self):
-            months = [
-                HijriMonth(year=1445, month=8, start_date=date(2024, 2, 11)),
-                HijriMonth(year=1445, month=9, start_date=date(2024, 3, 12)),
-            ]
-            # Shaban had 30 days, because Ramadan starts on 12 March
-            self.assertEqual(
-                hijri_for(date(2024, 3, 11), months),
-                {"day": 30, "month": 8, "year": 1445})
-            self.assertEqual(
-                hijri_for(date(2024, 3, 12), months),
-                {"day": 1, "month": 9, "year": 1445})
+    def test_api_uses_the_table(self):
+        booking = make_booking(self.user1, day=date(2024, 3, 12))
+        HijriMonth.objects.create(
+        year=1445, month=9, start_date=date(2024, 3, 12))
+        r = self.client.get(f"/api/bookings/{booking.pk}/")
+        self.assertEqual(r.data["hijri_date"]["day"], 1)
 
-        def test_api_uses_the_table(self):
-            booking = make_booking(self.user1, day=date(2024, 3, 12))
-            HijriMonth.objects.create(
-            year=1445, month=9, start_date=date(2024, 3, 12))
-            r = self.client.get(f"/api/bookings/{booking.pk}/")
-            self.assertEqual(r.data["hijri_date"]["day"], 1)
+class CalendarApiTests(ApiTestBase):
+    def test_shows_taken_period(self):
+        make_booking(self.user1, "09:00", day=date(2026, 11, 10))
+        r = self.client.get("/api/calendar/?year=2026&month=11")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(len(r.data), 30)
+        day = r.data[9]
+        self.assertEqual(day["date"], "2026-11-10")
+        self.assertEqual(day["taken"], ["morning"])
+        self.assertFalse(day["full"])
 
-    class CalendarApiTests(ApiTestBase):
-        def test_shows_taken_period(self):
-            make_booking(self.user1, "09:00", day=date(2026, 11, 10))
-            r = self.client.get("/api/calendar/?year=2026&month=11")
+    def test_day_with_two_bookings_is_full(self):
+        make_booking(self.user1, "09:00", day=date(2026, 11, 10))
+        make_booking(self.user1, "19:00", day=date(2026, 11, 10))
+        r = self.client.get("/api/calendar/?year=2026&month=11")
+        self.assertTrue(r.data[9]["full"])
+
+    def test_bad_month_rejected(self):
+        r = self.client.get("/api/calendar/?year=2026&month=13")
+        self.assertEqual(r.status_code, 400)
+
+
+class TodayHijriApiTests(ApiTestBase):
+    def test_today_endpoint(self):
+        r = self.client.get("/api/today/")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("month_name", r.data["hijri"])
+
+    def test_hijri_endpoint(self):
+        r = self.client.get("/api/hijri/?date=2024-03-11")
+        self.assertEqual(r.data["hijri"]["month_name"], "Ramazan")
+
+    def test_hijri_endpoint_bad_date(self):
+        r = self.client.get("/api/hijri/?date=abc")
+        self.assertEqual(r.status_code, 400)
+
+class ImageTests(ApiTestBase):
+    def test_big_image_is_shrunk_to_jpeg(self):
+        buf = io.BytesIO()
+        Image.new("RGB", (3000, 2000), "white").save(buf, "PNG")
+        big = SimpleUploadedFile("big.png", buf.getvalue(), content_type="image/png")
+        self.login_as(self.user1)
+        r = self.client.post(
+            "/api/bookings/", payload(parcha=big), format="multipart")
+        self.assertEqual(r.status_code, 201)
+        with Booking.objects.get().parcha.open() as f:
+            img = Image.open(f)
+            self.assertEqual(img.format, "JPEG")
+            self.assertLessEqual(max(img.size), 1600)
+
+    def test_fake_image_rejected(self):
+        fake = SimpleUploadedFile("x.png", b"not an image", content_type="image/png")
+        self.login_as(self.user1)
+        r = self.client.post(
+            "/api/bookings/", payload(parcha=fake), format="multipart")
+        self.assertEqual(r.status_code, 400)
+
+
+class ThrottleTests(ApiTestBase):
+    def test_login_is_limited(self):
+        codes = [
+            self.client.post(
+                "/api/login/", {"mobile": "9000000001", "password": "wrong"}
+            ).status_code
+            for _ in range(11)
+        ]
+        self.assertEqual(codes[0], 400)
+        self.assertEqual(codes[-1], 429)
+
+
+class PasswordTests(ApiTestBase):
+    def test_change_password(self):
+        self.login_as(self.user1)
+        r = self.client.post("/api/change-password/", {
+            "old_password": PASSWORD, "new_password": "NewPass@5678"})
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("token", r.data)
+        self.user1.refresh_from_db()
+        self.assertTrue(self.user1.check_password("NewPass@5678"))
+
+    def test_change_password_wrong_old(self):
+        self.login_as(self.user1)
+        r = self.client.post("/api/change-password/", {
+            "old_password": "wrong", "new_password": "NewPass@5678"})
+        self.assertEqual(r.status_code, 400)
+
+    def test_change_password_needs_login(self):
+        r = self.client.post("/api/change-password/", {
+            "old_password": PASSWORD, "new_password": "NewPass@5678"})
+        self.assertEqual(r.status_code, 401)
+
+    def test_reset_request_created_once(self):
+        for _ in range(2):
+            r = self.client.post(
+                "/api/password-reset-request/", {"mobile": "9000000001"})
             self.assertEqual(r.status_code, 200)
-            self.assertEqual(len(r.data), 30)
-            day = r.data[9]
-            self.assertEqual(day["date"], "2026-11-10")
-            self.assertEqual(day["taken"], ["morning"])
-            self.assertFalse(day["full"])
+        self.assertEqual(PasswordResetRequest.objects.count(), 1)
 
-        def test_day_with_two_bookings_is_full(self):
-            make_booking(self.user1, "09:00", day=date(2026, 11, 10))
-            make_booking(self.user1, "19:00", day=date(2026, 11, 10))
-            r = self.client.get("/api/calendar/?year=2026&month=11")
-            self.assertTrue(r.data[9]["full"])
+    def test_reset_request_hides_unknown_numbers(self):
+        r = self.client.post(
+            "/api/password-reset-request/", {"mobile": "9888888888"})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(PasswordResetRequest.objects.count(), 0)
 
-        def test_bad_month_rejected(self):
-            r = self.client.get("/api/calendar/?year=2026&month=13")
-            self.assertEqual(r.status_code, 400)
+    def test_reset_request_bad_number(self):
+        r = self.client.post("/api/password-reset-request/", {"mobile": "123"})
+        self.assertEqual(r.status_code, 400)
 
-
-    class TodayHijriApiTests(ApiTestBase):
-        def test_today_endpoint(self):
-            r = self.client.get("/api/today/")
-            self.assertEqual(r.status_code, 200)
-            self.assertIn("month_name", r.data["hijri"])
-
-        def test_hijri_endpoint(self):
-            r = self.client.get("/api/hijri/?date=2024-03-11")
-            self.assertEqual(r.data["hijri"]["month_name"], "Ramazan")
-
-        def test_hijri_endpoint_bad_date(self):
-            r = self.client.get("/api/hijri/?date=abc")
-            self.assertEqual(r.status_code, 400)
+    def test_admin_reset_sets_temp_password_and_flag(self):
+        boss = User.objects.create_superuser("boss", password="Boss@12345")
+        self.client.force_login(boss)
+        req = PasswordResetRequest.objects.create(mobile="9000000001")
+        self.client.post(
+            "/admin/bookings/passwordresetrequest/",
+            {"action": "reset_password", "_selected_action": [req.pk]},
+            follow=True,
+        )
+        self.user1.refresh_from_db()
+        self.assertFalse(self.user1.check_password(PASSWORD))
+        self.assertTrue(AccountFlag.objects.get(user=self.user1).must_change_password)
+        req.refresh_from_db()
+        self.assertTrue(req.handled)
