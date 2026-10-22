@@ -16,6 +16,10 @@ from django.core.cache import cache
 from .models import AccountFlag, PasswordResetRequest
 from django.core.management import call_command
 
+from django.utils import timezone
+from rest_framework.authtoken.models import Token
+
+
 User = get_user_model()
 TEMP_MEDIA = tempfile.mkdtemp()
 DAY = date.today() + timedelta(days=5)
@@ -67,20 +71,28 @@ class ApiTestBase(APITestCase):
 
 
 class AuthApiTests(ApiTestBase):
-    def test_register_gives_token(self):
-        r = self.client.post(
-            "/api/register/", {"mobile": "9111111111", "password": PASSWORD})
+    def test_register_gives_token_and_saves_name(self):
+        r = self.client.post("/api/register/", {
+            "name": "Ali Raza", "mobile": "9111111111", "password": PASSWORD})
         self.assertEqual(r.status_code, 201)
         self.assertIn("token", r.data)
+        self.assertEqual(
+            User.objects.get(username="9111111111").first_name, "Ali Raza")
+
+    def test_register_needs_a_name(self):
+        r = self.client.post(
+            "/api/register/", {"mobile": "9111111111", "password": PASSWORD})
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("name", r.data)
 
     def test_register_rejects_bad_number(self):
-        r = self.client.post(
-            "/api/register/", {"mobile": "12345", "password": PASSWORD})
+        r = self.client.post("/api/register/", {
+            "name": "Ali", "mobile": "12345", "password": PASSWORD})
         self.assertEqual(r.status_code, 400)
 
     def test_register_rejects_duplicate_number(self):
-        r = self.client.post(
-            "/api/register/", {"mobile": "9000000001", "password": PASSWORD})
+        r = self.client.post("/api/register/", {
+            "name": "Ali", "mobile": "9000000001", "password": PASSWORD})
         self.assertEqual(r.status_code, 400)
 
     def test_login_wrong_password(self):

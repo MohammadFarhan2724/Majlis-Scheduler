@@ -139,9 +139,9 @@ class HijriMonth(models.Model):
         return f"{self.year}-{self.month:02d} starts {self.start_date}"
 
 class AccountFlag(models.Model):
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="flag")
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="flag")
     must_change_password = models.BooleanField(default=False)
+    last_active = models.DateTimeField(null=True, blank=True)
 
 
 class PasswordResetRequest(models.Model):

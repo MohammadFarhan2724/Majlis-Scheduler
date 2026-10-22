@@ -9,10 +9,12 @@ User = get_user_model()
 
 
 class RegisterForm(forms.Form):
+    name = forms.CharField(max_length=100, label="Name")
     mobile = forms.CharField(max_length=10, label="Mobile number")
     password = forms.CharField(widget=forms.PasswordInput)
 
     def clean_mobile(self):
+        name = forms.CharField(max_length=100, label="Name")
         mobile = self.cleaned_data["mobile"].strip()
         if not re.fullmatch(r"[6-9]\d{9}", mobile):
             raise ValidationError("Enter a valid 10-digit mobile number.")

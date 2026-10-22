@@ -9,6 +9,7 @@ export default function Register() {
   const { t } = useTranslation()
   const { register } = useAuth()
   const navigate = useNavigate()
+  const [name, setName] = useState('')
   const [mobile, setMobile] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -19,7 +20,7 @@ export default function Register() {
     setError('')
     setBusy(true)
     try {
-      await register(mobile, password)
+      await register(name.trim(), mobile, password)
       navigate('/')
     } catch (err) {
       setError(errorText(err, t('errorGeneric')))
@@ -37,6 +38,19 @@ export default function Register() {
         </div>
       )}
       <form onSubmit={handleSubmit}>
+        <div className="field">
+          <label htmlFor="name">{t('name')}</label>
+          <input
+            id="name"
+            dir="auto"
+            type="text"
+            maxLength={100}
+            autoComplete="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </div>
         <div className="field">
           <label htmlFor="mobile">{t('mobile')}</label>
           <input

@@ -22,10 +22,10 @@ export default function AuthProvider({ children }) {
     setMustChangePassword(Boolean(data.must_change_password))
   }, [])
 
-  const register = useCallback(async (mobile, password) => {
+  const register = useCallback(async (name, mobile, password) => {
     const data = await api('/register/', {
       method: 'POST',
-      body: { mobile, password },
+      body: { name, mobile, password },
     })
     saveToken(data.token)
     setToken(data.token)

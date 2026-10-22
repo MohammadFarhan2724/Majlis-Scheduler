@@ -24,6 +24,9 @@ from .throttles import (
     BookingCreateThrottle, LoginThrottle, PasswordChangeThrottle,
     RegisterThrottle, ResetRequestThrottle,
 )
+
+from .authentication import touch_activity
+
 class IsOwnerOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return request.method in permissions.SAFE_METHODS or (
@@ -90,9 +93,11 @@ def register_api(request):
     user = get_user_model().objects.create_user(
         username=form.cleaned_data["mobile"],
         password=form.cleaned_data["password"],
+        first_name=form.cleaned_data["name"],
     )
     token = Token.objects.create(user=user)
-    return Response({"token": token.key}, status=201)
+    touch_activity(user)
+    return Response({"token": token.key, "name": user.first_name}, status=201)
 
 
 @api_view(["POST"])
@@ -106,9 +111,14 @@ def login_api(request):
     if user is None:
         return Response({"detail": "Wrong mobile number or password."}, status=400)
     token, _ = Token.objects.get_or_create(user=user)
+    touch_activity(user)
     must_change = AccountFlag.objects.filter(
         user=user, must_change_password=True).exists()
-    return Response({"token": token.key, "must_change_password": must_change})
+    return Response({
+        "token": token.key,
+        "name": user.first_name,
+        "must_change_password": must_change,
+    })
 
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
@@ -142,6 +152,7 @@ def change_password_api(request):
     AccountFlag.objects.filter(user=request.user).update(must_change_password=False)
     Token.objects.filter(user=request.user).delete()
     token = Token.objects.create(user=request.user)
+    touch_activity(request.user)
     return Response({"token": token.key})
 
 
