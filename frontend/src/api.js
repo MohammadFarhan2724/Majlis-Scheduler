@@ -87,3 +87,11 @@ export function translateError(err, t) {
   const hit = KNOWN_ERRORS.find(([part]) => text.includes(part))
   return hit ? t(hit[1]) : t('errorGeneric')
 }
+// use only the path, so pictures also load on a phone through the dev proxy
+export function mediaPath(url) {
+  try {
+    return new URL(url).pathname
+  } catch {
+    return url
+  }
+}

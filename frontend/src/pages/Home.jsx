@@ -1,6 +1,21 @@
+import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { api } from '../api'
 import { useAuth } from '../auth/AuthContext'
+import BookingCard from '../components/BookingCard'
+import TodayWidget from '../components/TodayWidget'
+
+const PERIODS = ['morning', 'afternoon', 'evening']
+
+// soonest first; on the same day: morning, afternoon, evening
+function sortBookings(list) {
+  return [...list].sort(
+    (a, b) =>
+      a.date.localeCompare(b.date) ||
+      PERIODS.indexOf(a.period) - PERIODS.indexOf(b.period),
+  )
+}
 
 export default function Home() {
   const { t } = useTranslation()
@@ -8,23 +23,46 @@ export default function Home() {
   const location = useLocation()
   const saved = Boolean(location.state && location.state.saved)
 
+  const [bookings, setBookings] = useState(null)
+  const [failed, setFailed] = useState(false)
+  const [reloadKey, setReloadKey] = useState(0)
+
+  useEffect(() => {
+    let cancelled = false
+    api('/bookings/')
+      .then((data) => {
+        if (!cancelled) setBookings(sortBookings(data))
+      })
+      .catch(() => {
+        if (!cancelled) setFailed(true)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [reloadKey])
+
+  function retry() {
+    setFailed(false)
+    setBookings(null)
+    setReloadKey((k) => k + 1)
+  }
+
   return (
     <>
       <h1>{t('appName')}</h1>
-      <p>{t('tagline')}</p>
+      <TodayWidget />
+
       {saved && (
         <div className="success-box" role="status">
           {t('saved')}
         </div>
       )}
+
       {isLoggedIn ? (
         <div className="stack">
           <Link className="btn-primary" to="/new">
             {t('scheduleYours')}
           </Link>
-          <button type="button" className="btn-secondary" onClick={logout}>
-            {t('logout')}
-          </button>
         </div>
       ) : (
         <div className="stack">
@@ -35,6 +73,27 @@ export default function Home() {
             {t('register')}
           </Link>
         </div>
+      )}
+
+      <h2 className="list-title">{t('upcomingTitle')}</h2>
+
+      {failed && (
+        <div className="error-box" role="alert">
+          {t('errorGeneric')}
+          <button type="button" className="btn-secondary small" onClick={retry}>
+            {t('tryAgain')}
+          </button>
+        </div>
+      )}
+      {!failed && bookings === null && <p>{t('pleaseWait')}</p>}
+      {bookings && bookings.length === 0 && <p>{t('noUpcoming')}</p>}
+      {bookings &&
+        bookings.map((b) => <BookingCard key={b.id} booking={b} />)}
+
+      {isLoggedIn && (
+        <button type="button" className="btn-secondary logout-btn" onClick={logout}>
+          {t('logout')}
+        </button>
       )}
     </>
   )

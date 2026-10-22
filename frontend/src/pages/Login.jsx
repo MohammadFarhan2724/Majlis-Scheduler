@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import { translateError } from '../api'
@@ -7,7 +7,7 @@ import PasswordInput from '../components/PasswordInput'
 
 export default function Login() {
   const { t } = useTranslation()
-  const { login } = useAuth()
+  const { login, isLoggedIn } = useAuth()
   const navigate = useNavigate()
   const [mobile, setMobile] = useState('')
   const [password, setPassword] = useState('')
@@ -27,6 +27,8 @@ export default function Login() {
       setBusy(false)
     }
   }
+
+if (isLoggedIn) return <Navigate to="/" replace />
 
   return (
     <>
