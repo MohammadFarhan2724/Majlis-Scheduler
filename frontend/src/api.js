@@ -61,3 +61,29 @@ export function errorText(err, fallback) {
   const first = Object.values(data).flat()[0]
   return typeof first === 'string' ? first : fallback
 }
+
+const KNOWN_ERRORS = [
+  ['already taken', 'err_spot_taken'],
+  ['already full', 'err_day_full'],
+  ['in the past', 'err_past_date'],
+  ['write the type', 'err_write_type'],
+  ['select a venue', 'err_venue_needed'],
+  ['at least one name', 'err_name_needed'],
+  ['Invalid category', 'err_bad_category'],
+  ['too big', 'err_image_big'],
+  ['valid JPG', 'err_image_bad'],
+  ['throttled', 'err_throttled'],
+  ['Wrong mobile number', 'err_wrong_login'],
+  ['valid 10-digit', 'err_bad_mobile'],
+  ['already registered', 'err_mobile_taken'],
+  ['too short', 'err_pw_short'],
+  ['too common', 'err_pw_common'],
+  ['entirely numeric', 'err_pw_numeric'],
+  ['required', 'err_required'],
+]
+
+export function translateError(err, t) {
+  const text = errorText(err, '')
+  const hit = KNOWN_ERRORS.find(([part]) => text.includes(part))
+  return hit ? t(hit[1]) : t('errorGeneric')
+}

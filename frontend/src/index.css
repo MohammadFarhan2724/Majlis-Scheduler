@@ -173,3 +173,181 @@ html[lang='ur'] body {
   color: var(--accent);
   font-weight: 700;
 }
+
+.lang-switcher {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  padding: 8px 0;
+}
+
+.toggle-row {
+  display: flex;
+  gap: 8px;
+}
+
+.field select,
+.field textarea {
+  width: 100%;
+  min-height: 52px;
+  font-size: 1.1rem;
+  padding: 8px 12px;
+  border: 2px solid #8a8a8a;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+  font-family: inherit;
+}
+
+.field textarea {
+  min-height: 96px;
+}
+
+.field select:focus,
+.field textarea:focus {
+  outline: 3px solid var(--accent);
+  border-color: var(--accent);
+}
+
+.field select + input {
+  margin-top: 8px;
+}
+
+.field-error {
+  color: #8a1c12;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+.success-box {
+  background: #e7f4ee;
+  color: #0b4a3c;
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.names-block {
+  margin-bottom: 18px;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  font-weight: 700;
+}
+
+.check-row input {
+  width: 28px;
+  height: 28px;
+  accent-color: var(--accent);
+}
+
+.name-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.name-row input {
+  flex: 1;
+  min-width: 0;
+  min-height: 52px;
+  font-size: 1.1rem;
+  padding: 8px 12px;
+  border: 2px solid #8a8a8a;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+}
+
+.remove-btn {
+  min-width: 88px;
+  font-size: 1rem;
+  border: 2px solid #8a1c12;
+  background: #fff;
+  color: #8a1c12;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.btn-secondary.small {
+  width: auto;
+  min-height: 44px;
+  padding: 8px 16px;
+  font-size: 1rem;
+}
+
+.period-group {
+  margin-bottom: 14px;
+}
+
+.period-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.taken-note {
+  color: #8a1c12;
+  font-weight: 400;
+}
+
+.slots {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.slot-btn {
+  min-height: 52px;
+  padding: 6px;
+  font-size: 1rem;
+  border: 2px solid var(--accent);
+  background: #fff;
+  color: var(--accent);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.slot-btn.wide {
+  grid-column: 1 / -1;
+}
+
+.slot-btn.selected {
+  background: var(--accent);
+  color: #fff;
+}
+
+.slot-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.islamic-date {
+  margin-top: 8px;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.file-btn {
+  cursor: pointer;
+}
+
+.preview {
+  display: block;
+  max-width: 100%;
+  max-height: 260px;
+  margin-top: 10px;
+  border-radius: 12px;
+}

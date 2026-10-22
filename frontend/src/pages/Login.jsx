@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
-import { errorText } from '../api'
+import { translateError } from '../api'
 import PasswordInput from '../components/PasswordInput'
 
 export default function Login() {
@@ -22,7 +22,7 @@ export default function Login() {
       await login(mobile, password)
       navigate('/')
     } catch (err) {
-      setError(errorText(err, t('errorGeneric')))
+       setError(translateError(err, t))
     } finally {
       setBusy(false)
     }
