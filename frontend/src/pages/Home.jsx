@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { api } from '../api'
+import { loadBookings } from '../prefetch'
 import { useAuth } from '../auth/AuthContext'
 import BookingCard from '../components/BookingCard'
 import TodayWidget from '../components/TodayWidget'
@@ -39,7 +39,7 @@ export default function Home() {
 
   useEffect(() => {
     let cancelled = false
-    api('/bookings/')
+      loadBookings(reloadKey > 0)
       .then((data) => {
         if (!cancelled) setBookings(sortBookings(data))
       })

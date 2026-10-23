@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api, translateError } from '../api'
+import { invalidateBookings } from '../prefetch'
 
 const PERIODS = ['morning', 'afternoon', 'evening']
 
@@ -182,6 +183,7 @@ export default function BookingForm() {
     setBusy(true)
     try {
       await api('/bookings/', { method: 'POST', body })
+      invalidateBookings() // so the home list shows the new booking
       navigate('/', { state: { saved: true } })
     } catch (err) {
       setFormError(translateError(err, t))
