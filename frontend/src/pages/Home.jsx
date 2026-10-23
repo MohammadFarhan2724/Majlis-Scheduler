@@ -19,7 +19,7 @@ function sortBookings(list) {
 
 export default function Home() {
   const { t } = useTranslation()
-  const { isLoggedIn, logout } = useAuth()
+  const { isLoggedIn } = useAuth()
   const location = useLocation()
   const [showSaved, setShowSaved] = useState(
     Boolean(location.state && location.state.saved),
@@ -69,9 +69,12 @@ export default function Home() {
       )}
 
       {isLoggedIn ? (
-        <div className="stack">
+                <div className="stack">
           <Link className="btn-primary" to="/new">
             {t('scheduleYours')}
+          </Link>
+          <Link className="btn-secondary" to="/account">
+            {t('myAccount')}
           </Link>
         </div>
       ) : (

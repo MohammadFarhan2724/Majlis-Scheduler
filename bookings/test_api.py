@@ -266,6 +266,17 @@ class OwnerLockApiTests(ApiTestBase):
         self.assertEqual(r.status_code, 204)
         self.assertFalse(Booking.objects.filter(pk=self.booking.pk).exists())
 
+    def test_owner_can_switch_to_a_written_venue(self):
+        venue = Venue.objects.create(name_en="Hall")
+        self.booking.venue = venue
+        self.booking.other_venue = ""
+        self.booking.save()
+        self.login_as(self.user1)
+        r = self.client.patch(self.url, {"venue": "", "other_venue": "My home"})
+        self.assertEqual(r.status_code, 200)
+        self.assertIsNone(r.data["venue"])
+        self.assertEqual(r.data["other_venue"], "My home")
+
 class HijriTests(ApiTestBase):
     def test_library_fallback(self):
         self.assertEqual(
@@ -468,3 +479,28 @@ class CleanupTests(ApiTestBase):
         call_command("delete_old_bookings")
         self.assertFalse(Booking.objects.filter(pk=old.pk).exists())
         self.assertTrue(Booking.objects.filter(pk=recent.pk).exists())
+
+class MeAndKindTests(ApiTestBase):
+    def test_me_needs_login(self):
+        r = self.client.get("/api/me/")
+        self.assertEqual(r.status_code, 401)
+
+    def test_me_returns_name_and_mobile(self):
+        self.user1.first_name = "Ali Raza"
+        self.user1.save()
+        self.login_as(self.user1)
+        r = self.client.get("/api/me/")
+        self.assertEqual(r.data, {"name": "Ali Raza", "mobile": "9000000001"})
+
+    def test_mine_can_filter_by_kind(self):
+        make_booking(self.user1, "09:00")  # a majlis
+        Booking.objects.create(
+            kind="mehfil", category="noor", organizer_name="B", khitabat="K",
+            other_venue="Home", date=DAY, time_slot="19:00",
+            parcha="parcha/x.png", owner=self.user1,
+        )
+        self.login_as(self.user1)
+        r = self.client.get("/api/bookings/mine/?kind=mehfil")
+        self.assertEqual([b["kind"] for b in r.data], ["mehfil"])
+        r = self.client.get("/api/bookings/mine/?kind=majlis")
+        self.assertEqual([b["kind"] for b in r.data], ["majlis"])

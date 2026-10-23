@@ -47,6 +47,9 @@ class BookingViewSet(viewsets.ModelViewSet):
             qs = qs.filter(date__gte=today)
         elif self.action == "mine":
             qs = qs.filter(owner=self.request.user)
+            kind = self.request.query_params.get("kind")
+            if kind in ("majlis", "mehfil"):
+                qs = qs.filter(kind=kind)
             if self.request.query_params.get("tab") == "completed":
                 return qs.filter(date__lt=today).order_by("-date")
             qs = qs.filter(date__gte=today)
@@ -225,4 +228,12 @@ def options_api(request):
             for code, label in TimeSlot.choices
         ],
         "venues": VenueSerializer(Venue.objects.order_by("id"), many=True).data,
+    })
+
+@api_view(["GET"])
+@permission_classes([permissions.IsAuthenticated])
+def me_api(request):
+    return Response({
+        "name": request.user.first_name,
+        "mobile": request.user.username,
     })

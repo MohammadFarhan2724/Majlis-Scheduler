@@ -4,6 +4,7 @@ import AuthProvider from './auth/AuthProvider'
 import LanguageSwitcher from './components/LanguageSwitcher'
 import RequireAuth from './components/RequireAuth'
 import Splash from './components/Splash'
+import Account from './pages/Account'
 import BookingDetail from './pages/BookingDetail'
 import BookingForm from './pages/BookingForm'
 import Home from './pages/Home'
@@ -33,14 +34,12 @@ export default function App() {
     setShowSplash(false)
   }, [])
 
-  const background = location.pathname.startsWith('/account')
-    ? 'app-bg bg-jamkaran'
-    : 'app-bg bg-pattern'
+  const onAccount = location.pathname.startsWith('/account')
 
   return (
     <AuthProvider>
-      <div className={background} />
-      <div className="page">
+      <div className={onAccount ? 'app-bg bg-jamkaran' : 'app-bg bg-pattern'} />
+      <div className={onAccount ? 'page page-account' : 'page'}>
         <LanguageSwitcher />
         <Routes>
           <Route path="/" element={<Home />} />
@@ -52,6 +51,22 @@ export default function App() {
             element={
               <RequireAuth>
                 <BookingForm />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/edit/:id"
+            element={
+              <RequireAuth>
+                <BookingForm />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/account"
+            element={
+              <RequireAuth>
+                <Account />
               </RequireAuth>
             }
           />

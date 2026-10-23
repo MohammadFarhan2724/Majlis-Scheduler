@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { api, translateError } from '../api'
+import { api, mediaPath, translateError } from '../api'
 import { invalidateBookings } from '../prefetch'
 
 const PERIODS = ['morning', 'afternoon', 'evening']
@@ -28,10 +28,14 @@ function Field({ id, label, hint, error, children }) {
 export default function BookingForm() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
+  const { id } = useParams()
+  const editing = Boolean(id)
 
   const [options, setOptions] = useState(null)
   const [loadFailed, setLoadFailed] = useState(false)
   const [calendars, setCalendars] = useState({})
+  const [original, setOriginal] = useState(null)
+  const [notMine, setNotMine] = useState(false)
 
   const [kind, setKind] = useState('majlis')
   const [category, setCategory] = useState('')
@@ -58,6 +62,40 @@ export default function BookingForm() {
       .then(setOptions)
       .catch(() => setLoadFailed(true))
   }, [])
+
+  // in edit mode: load the saved booking and fill the form
+  useEffect(() => {
+    if (!id) return undefined
+    let cancelled = false
+    api(`/bookings/${id}/`)
+      .then((b) => {
+        if (cancelled) return
+        if (!b.is_mine) {
+          setNotMine(true)
+          return
+        }
+        setOriginal(b)
+        setKind(b.kind)
+        setCategory(b.category)
+        setOtherCategory(b.other_category)
+        setOrganizer(b.organizer_name)
+        setIsaal(b.isaal_e_sawaab)
+        setNames(b.marhoomeen.length ? b.marhoomeen : [''])
+        setSogwaran(b.sogwaran)
+        setKhitabat(b.khitabat)
+        setVenue(b.venue ? String(b.venue) : 'other')
+        setOtherVenue(b.other_venue)
+        setDate(b.date)
+        setTimeSlot(b.time_slot)
+        setAfterMajlis(b.after_majlis)
+      })
+      .catch(() => {
+        if (!cancelled) setNotMine(true)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [id])
 
   // when a date is chosen, load that month: Islamic dates and booked parts of the day
   useEffect(() => {
@@ -93,8 +131,14 @@ export default function BookingForm() {
   const dayInfo = date
     ? calendars[date.slice(0, 7)]?.find((d) => d.date === date)
     : null
-  const takenPeriods = dayInfo ? dayInfo.taken : []
-  const dayFull = Boolean(dayInfo && dayInfo.full)
+
+  // when editing, the booking's own spot on its own day is not "taken"
+  const onOriginalDay = Boolean(original && date === original.date)
+  const rawTaken = dayInfo ? dayInfo.taken : []
+  const takenPeriods = onOriginalDay
+    ? rawTaken.filter((p) => p !== original.period)
+    : rawTaken
+  const dayFull = Boolean(dayInfo && dayInfo.full && !onOriginalDay)
 
   const typeList = options
     ? kind === 'majlis'
@@ -136,7 +180,7 @@ export default function BookingForm() {
     if (venue === '') e.venue = need
     else if (venue === 'other' && !otherVenue.trim()) e.otherVenue = need
     if (!date) e.date = need
-    else if (date < todayString()) e.date = t('err_past_date')
+    else if (date < todayString() && !onOriginalDay) e.date = t('err_past_date')
     if (!timeSlot) {
       e.timeSlot = t('err_pick_time')
     } else {
@@ -144,7 +188,7 @@ export default function BookingForm() {
       if (dayFull) e.timeSlot = t('err_day_full')
       else if (takenPeriods.includes(period)) e.timeSlot = t('err_spot_taken')
     }
-    if (!image) e.image = t('err_need_image')
+    if (!image && !editing) e.image = t('err_need_image')
     return e
   }
 
@@ -162,15 +206,15 @@ export default function BookingForm() {
     const body = new FormData()
     body.append('kind', kind)
     body.append('category', category)
-    if (category === 'other') body.append('other_category', otherCategory.trim())
-    if (withIsaal) body.append('sogwaran', sogwaran.trim())
-    else body.append('organizer_name', organizer.trim())
+    body.append('other_category', category === 'other' ? otherCategory.trim() : '')
+    body.append('organizer_name', withIsaal ? '' : organizer.trim())
+    body.append('sogwaran', withIsaal ? sogwaran.trim() : '')
     body.append('khitabat', khitabat.trim())
-    if (venue === 'other') body.append('other_venue', otherVenue.trim())
-    else body.append('venue', venue)
+    body.append('venue', venue === 'other' ? '' : venue)
+    body.append('other_venue', venue === 'other' ? otherVenue.trim() : '')
     body.append('date', date)
     body.append('time_slot', timeSlot)
-    body.append('parcha', image)
+    if (image) body.append('parcha', image)
     body.append('isaal_e_sawaab', withIsaal ? 'true' : 'false')
     if (withIsaal) {
       names
@@ -178,13 +222,16 @@ export default function BookingForm() {
         .filter(Boolean)
         .forEach((n) => body.append('marhoomeen_names', n))
     }
-    if (afterMajlis.trim()) body.append('after_majlis', afterMajlis.trim())
+    body.append('after_majlis', afterMajlis.trim())
 
     setBusy(true)
     try {
-      await api('/bookings/', { method: 'POST', body })
-      invalidateBookings() // so the home list shows the new booking
-      navigate('/', { state: { saved: true } })
+      await api(editing ? `/bookings/${id}/` : '/bookings/', {
+        method: editing ? 'PATCH' : 'POST',
+        body,
+      })
+      invalidateBookings() // so the home list shows the change
+      navigate(editing ? '/account' : '/', { state: { saved: true } })
     } catch (err) {
       setFormError(translateError(err, t))
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -193,15 +240,18 @@ export default function BookingForm() {
     }
   }
 
+  if (notMine) return <div className="error-box">{t('notFound')}</div>
   if (loadFailed) return <div className="error-box">{t('errorGeneric')}</div>
-  if (!options) return <p>{t('pleaseWait')}</p>
+  if (!options || (editing && !original)) return <p>{t('pleaseWait')}</p>
+
+  const shownImage = preview || (original ? mediaPath(original.parcha) : null)
 
   return (
     <>
-      <Link className="back-link" to="/">
+      <Link className="back-link" to={editing ? '/account' : '/'}>
         {t('back')}
       </Link>
-      <h1>{t('newTitle')}</h1>
+      <h1>{editing ? t('editTitle') : t('newTitle')}</h1>
 
       {formError && (
         <div className="error-box" role="alert">
@@ -388,7 +438,7 @@ export default function BookingForm() {
           <input
             id="date"
             type="date"
-            min={todayString()}
+            min={editing ? undefined : todayString()}
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
@@ -442,9 +492,14 @@ export default function BookingForm() {
           )}
         </div>
 
-        <Field id="parcha" label={t('parcha')} error={errors.image}>
+        <Field
+          id="parcha"
+          label={t('parcha')}
+          hint={editing ? t('keepPhotoHelp') : undefined}
+          error={errors.image}
+        >
           <label className="btn-secondary file-btn">
-            {image ? t('changeImage') : t('chooseImage')}
+            {shownImage ? t('changeImage') : t('chooseImage')}
             <input
               id="parcha"
               type="file"
@@ -453,7 +508,7 @@ export default function BookingForm() {
               onChange={(e) => setImage(e.target.files[0] || null)}
             />
           </label>
-          {preview && <img className="preview" src={preview} alt="" />}
+          {shownImage && <img className="preview" src={shownImage} alt="" />}
         </Field>
 
         <Field
@@ -471,7 +526,7 @@ export default function BookingForm() {
         </Field>
 
         <button className="btn-primary" type="submit" disabled={busy}>
-          {busy ? t('pleaseWait') : t('submit')}
+          {busy ? t('pleaseWait') : editing ? t('saveChanges') : t('submit')}
         </button>
       </form>
     </>

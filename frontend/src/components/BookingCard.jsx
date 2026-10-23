@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { mediaPath } from '../api'
 import { formatDate } from '../dates'
 
-export default function BookingCard({ booking: b }) {
+export default function BookingCard({ booking: b, footer }) {
   const { t, i18n } = useTranslation()
   const lang = i18n.language
   const months = t('hijriMonths', { returnObjects: true })
@@ -17,55 +17,54 @@ export default function BookingCard({ booking: b }) {
   const time = t(`slot_${b.time_slot.replace(':', '')}`)
 
   return (
-    <Link
-      className="card card-link"
-      to={`/majlis/${b.id}`}
-      state={{ booking: b }}
-    >
-      <div className="card-body">
-        <img
-          className="card-photo"
-          src={mediaPath(b.parcha)}
-          alt=""
-          loading="lazy"
-        />
-        <div className="card-text">
-          <div className="card-type" dir="auto">
-            {title}
-          </div>
-          <div className="card-date">{formatDate(b.date, lang, true)}</div>
-          <div className="card-hijri">
-            {h.day} {months[h.month - 1]} {h.year} {t('hijriSuffix')}
-          </div>
-          <div className="card-time">{time}</div>
-          <div className="line">
-            <span className="label">{t('khitabatShort')}:</span>{' '}
-            <span dir="auto">{b.khitabat}</span>
-          </div>
-          <div className="line">
-            <span className="label">{t('venue')}:</span>{' '}
-            <span dir="auto">{venue}</span>
-          </div>
-          {b.sogwaran ? (
-            <div className="line clamp">
-              <span className="label">{t('sogwaran')}:</span>{' '}
-              <span dir="auto">{b.sogwaran}</span>
+    <article className="card">
+      <Link className="card-link" to={`/majlis/${b.id}`} state={{ booking: b }}>
+        <div className="card-body">
+          <img
+            className="card-photo"
+            src={mediaPath(b.parcha)}
+            alt=""
+            loading="lazy"
+          />
+          <div className="card-text">
+            <div className="card-type" dir="auto">
+              {title}
             </div>
-          ) : (
+            <div className="card-date">{formatDate(b.date, lang, true)}</div>
+            <div className="card-hijri">
+              {h.day} {months[h.month - 1]} {h.year} {t('hijriSuffix')}
+            </div>
+            <div className="card-time">{time}</div>
             <div className="line">
-              <span className="label">{t('organizerShort')}:</span>{' '}
-              <span dir="auto">{b.organizer_name}</span>
+              <span className="label">{t('khitabatShort')}:</span>{' '}
+              <span dir="auto">{b.khitabat}</span>
             </div>
-          )}
-          {b.after_majlis && (
-            <div className="line clamp">
-              <span className="label">{t('afterMajlis')}:</span>{' '}
-              <span dir="auto">{b.after_majlis}</span>
+            <div className="line">
+              <span className="label">{t('venue')}:</span>{' '}
+              <span dir="auto">{venue}</span>
             </div>
-          )}
+            {b.sogwaran ? (
+              <div className="line clamp">
+                <span className="label">{t('sogwaran')}:</span>{' '}
+                <span dir="auto">{b.sogwaran}</span>
+              </div>
+            ) : (
+              <div className="line">
+                <span className="label">{t('organizerShort')}:</span>{' '}
+                <span dir="auto">{b.organizer_name}</span>
+              </div>
+            )}
+            {b.after_majlis && (
+              <div className="line clamp">
+                <span className="label">{t('afterMajlis')}:</span>{' '}
+                <span dir="auto">{b.after_majlis}</span>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-      <p className="card-note">{t('defaultNote')}</p>
-    </Link>
+        <p className="card-note">{t('defaultNote')}</p>
+      </Link>
+      {footer}
+    </article>
   )
 }

@@ -10,6 +10,7 @@ router.register("venues", api_views.VenueViewSet, basename="api-venue")
 urlpatterns = [
     path("register/", api_views.register_api),
     path("login/", api_views.login_api),
+    path("me/", api_views.me_api),
     path("calendar/", api_views.calendar_api),
     path("options/", api_views.options_api),
     path("today/", api_views.today_api),
