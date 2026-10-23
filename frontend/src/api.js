@@ -79,6 +79,8 @@ const KNOWN_ERRORS = [
   ['too short', 'err_pw_short'],
   ['too common', 'err_pw_common'],
   ['entirely numeric', 'err_pw_numeric'],
+  ['sogwaran names', 'err_sogwaran_needed'],
+  ['organizer name', 'err_organizer_needed'],
   ['required', 'err_required'],
 ]
 

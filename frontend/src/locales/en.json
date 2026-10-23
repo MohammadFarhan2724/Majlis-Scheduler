@@ -1,5 +1,9 @@
 {
   "appName": "Majlis Scheduler",
+  "sogwaran": "Sogwaran",
+  "sogwaranHelp": "Write the names of the family in mourning. You can write many names.",
+  "err_sogwaran_needed": "Please write the sogwaran names.",
+  "err_organizer_needed": "Please write the organizer name.",
   "khitabatShort": "Khitabat",
   "organizerShort": "Organizer",
   "defaultNote": "Momineen are requested to participate with strict adherence to this time",
@@ -40,7 +44,7 @@
   "writeType": "Write the type here",
   "organizer": "Organizer name",
   "isaal": "Isaal e Sawaab",
-  "marhoomName": "Name of the marhoom",
+  "marhoomName": "Name of the marhoom (with father's name)",
   "addMore": "+ Add more",
   "remove": "Remove",
   "khitabat": "Khitabat (Maulana / reciter)",

@@ -168,10 +168,41 @@ class BookingApiTests(ApiTestBase):
 
     def test_isaal_with_names_saved(self):
         self.login_as(self.user1)
-        data = payload(isaal_e_sawaab="true", marhoomeen_names=["Ahmad", "Zeeshan"])
+        data = payload(
+            isaal_e_sawaab="true",
+            marhoomeen_names=["Ahmad ibne Hasan", "Zeeshan ibne Hasan"],
+            sogwaran="Rizwan Husain, Asad Husain, Mohsin Ali",
+        )
         r = self.client.post("/api/bookings/", data, format="multipart")
         self.assertEqual(r.status_code, 201)
-        self.assertEqual(r.data["marhoomeen"], ["Ahmad", "Zeeshan"])
+        self.assertEqual(
+            r.data["marhoomeen"], ["Ahmad ibne Hasan", "Zeeshan ibne Hasan"])
+        self.assertEqual(r.data["sogwaran"], "Rizwan Husain, Asad Husain, Mohsin Ali")
+        self.assertEqual(r.data["organizer_name"], "")
+
+    def test_isaal_needs_sogwaran(self):
+        self.login_as(self.user1)
+        data = payload(isaal_e_sawaab="true", marhoomeen_names=["Ahmad"])
+        r = self.client.post("/api/bookings/", data, format="multipart")
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("sogwaran", r.data)
+
+    def test_organizer_needed_without_isaal(self):
+        self.login_as(self.user1)
+        r = self.client.post(
+            "/api/bookings/", payload(organizer_name=""), format="multipart")
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("organizer_name", r.data)
+
+    def test_long_names_are_allowed(self):
+        self.login_as(self.user1)
+        data = payload(
+            isaal_e_sawaab="true",
+            marhoomeen_names=["A" * 150],
+            sogwaran="B" * 400,
+        )
+        r = self.client.post("/api/bookings/", data, format="multipart")
+        self.assertEqual(r.status_code, 201)
 
     def test_other_category_needs_text(self):
         self.login_as(self.user1)
@@ -308,7 +339,7 @@ class ImageTests(ApiTestBase):
         with Booking.objects.get().parcha.open() as f:
             img = Image.open(f)
             self.assertEqual(img.format, "JPEG")
-            self.assertLessEqual(max(img.size), 1600)
+            self.assertLessEqual(max(img.size), 2000)
 
     def test_fake_image_rejected(self):
         fake = SimpleUploadedFile("x.png", b"not an image", content_type="image/png")

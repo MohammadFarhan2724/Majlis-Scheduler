@@ -1,14 +1,20 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api, mediaPath } from '../api'
 import { formatDate } from '../dates'
 
 export default function BookingDetail() {
   const { id } = useParams()
+  const location = useLocation()
   const { t, i18n } = useTranslation()
   const lang = i18n.language
-  const [booking, setBooking] = useState(null)
+
+  // the card passes what it already has, so the page opens instantly
+  const passed = location.state && location.state.booking
+  const [booking, setBooking] = useState(
+    passed && String(passed.id) === String(id) ? passed : null,
+  )
   const [failed, setFailed] = useState(false)
 
   useEffect(() => {
@@ -31,19 +37,15 @@ export default function BookingDetail() {
     </Link>
   )
 
-  if (failed) {
-    return (
-      <>
-        {back}
-        <div className="error-box">{t('notFound')}</div>
-      </>
-    )
-  }
   if (!booking) {
     return (
       <>
         {back}
-        <p>{t('pleaseWait')}</p>
+        {failed ? (
+          <div className="error-box">{t('notFound')}</div>
+        ) : (
+          <p>{t('pleaseWait')}</p>
+        )}
       </>
     )
   }
@@ -79,11 +81,24 @@ export default function BookingDetail() {
           {t(`slot_${b.time_slot.replace(':', '')}`)}
         </div>
 
+        <a href={mediaPath(b.parcha)} target="_blank" rel="noreferrer">
+          <img className="parcha" src={mediaPath(b.parcha)} alt="" />
+        </a>
+
         <dl className="card-details">
           <dt>{t('venue')}</dt>
           <dd dir="auto">{venue}</dd>
-          <dt>{t('organizer')}</dt>
-          <dd dir="auto">{b.organizer_name}</dd>
+          {b.sogwaran ? (
+            <>
+              <dt>{t('sogwaran')}</dt>
+              <dd dir="auto">{b.sogwaran}</dd>
+            </>
+          ) : (
+            <>
+              <dt>{t('organizer')}</dt>
+              <dd dir="auto">{b.organizer_name}</dd>
+            </>
+          )}
           <dt>{t('khitabat')}</dt>
           <dd dir="auto">{b.khitabat}</dd>
           {b.marhoomeen.length > 0 && (
@@ -115,10 +130,6 @@ export default function BookingDetail() {
           rel="noreferrer"
         >
           {t('openMap')}
-        </a>
-
-        <a href={mediaPath(b.parcha)} target="_blank" rel="noreferrer">
-          <img className="parcha" src={mediaPath(b.parcha)} alt="" />
         </a>
 
         <p className="card-note">{t('defaultNote')}</p>

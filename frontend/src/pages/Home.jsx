@@ -21,7 +21,17 @@ export default function Home() {
   const { t } = useTranslation()
   const { isLoggedIn, logout } = useAuth()
   const location = useLocation()
-  const saved = Boolean(location.state && location.state.saved)
+  const [showSaved, setShowSaved] = useState(
+    Boolean(location.state && location.state.saved),
+  )
+
+  useEffect(() => {
+    if (!showSaved) return undefined
+    // clear the router state, so a page reload does not show the message again
+    window.history.replaceState({ ...window.history.state, usr: null }, '')
+    const timer = setTimeout(() => setShowSaved(false), 4000)
+    return () => clearTimeout(timer)
+  }, [showSaved])
 
   const [bookings, setBookings] = useState(null)
   const [failed, setFailed] = useState(false)
@@ -52,7 +62,7 @@ export default function Home() {
       <h1>{t('appName')}</h1>
       <TodayWidget />
 
-      {saved && (
+      {showSaved && (
         <div className="success-box" role="status">
           {t('saved')}
         </div>

@@ -18,7 +18,7 @@ class VenueSerializer(serializers.ModelSerializer):
 class BookingSerializer(serializers.ModelSerializer):
     marhoomeen = serializers.SerializerMethodField()
     marhoomeen_names = serializers.ListField(
-        child=serializers.CharField(max_length=100),
+        child=serializers.CharField(max_length=200),
         write_only=True, required=False,
     )
     venue_detail = VenueSerializer(source="venue", read_only=True)
@@ -28,7 +28,7 @@ class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
         fields = [
-            "id", "kind", "category", "other_category", "organizer_name",
+            "id", "kind", "category", "other_category", "organizer_name", "sogwaran",
             "khitabat", "venue", "venue_detail", "other_venue", "date",
             "hijri_date", "time_slot", "period", "parcha", "isaal_e_sawaab",
             "marhoomeen", "marhoomeen_names", "after_majlis", "is_mine",
@@ -84,6 +84,15 @@ class BookingSerializer(serializers.ModelSerializer):
         if isaal and not names:
             raise serializers.ValidationError(
                 {"marhoomeen_names": "Write at least one name."})
+        if isaal:
+            if not (val("sogwaran") or "").strip():
+                raise serializers.ValidationError(
+                    {"sogwaran": "Please write the sogwaran names."})
+        elif not (val("organizer_name") or "").strip():
+            raise serializers.ValidationError(
+                {"organizer_name": "Please write the organizer name."})
+        attrs["organizer_name"] = "" if isaal else val("organizer_name").strip()
+        attrs["sogwaran"] = val("sogwaran").strip() if isaal else ""
         attrs["isaal_e_sawaab"] = isaal
         attrs["marhoomeen_names"] = names if isaal else []
 

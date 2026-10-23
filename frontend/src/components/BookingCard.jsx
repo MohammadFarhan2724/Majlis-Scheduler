@@ -17,7 +17,11 @@ export default function BookingCard({ booking: b }) {
   const time = t(`slot_${b.time_slot.replace(':', '')}`)
 
   return (
-    <Link className="card card-link" to={`/majlis/${b.id}`}>
+    <Link
+      className="card card-link"
+      to={`/majlis/${b.id}`}
+      state={{ booking: b }}
+    >
       <div className="card-body">
         <img
           className="card-photo"
@@ -42,12 +46,19 @@ export default function BookingCard({ booking: b }) {
             <span className="label">{t('venue')}:</span>{' '}
             <span dir="auto">{venue}</span>
           </div>
-          <div className="line">
-            <span className="label">{t('organizerShort')}:</span>{' '}
-            <span dir="auto">{b.organizer_name}</span>
-          </div>
-          {b.after_majlis && (
+          {b.sogwaran ? (
+            <div className="line clamp">
+              <span className="label">{t('sogwaran')}:</span>{' '}
+              <span dir="auto">{b.sogwaran}</span>
+            </div>
+          ) : (
             <div className="line">
+              <span className="label">{t('organizerShort')}:</span>{' '}
+              <span dir="auto">{b.organizer_name}</span>
+            </div>
+          )}
+          {b.after_majlis && (
+            <div className="line clamp">
               <span className="label">{t('afterMajlis')}:</span>{' '}
               <span dir="auto">{b.after_majlis}</span>
             </div>

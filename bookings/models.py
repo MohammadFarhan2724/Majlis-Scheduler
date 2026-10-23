@@ -75,7 +75,8 @@ class Booking(models.Model):
     kind = models.CharField(max_length=10, choices=Kind.choices)
     category = models.CharField(max_length=30)
     other_category = models.CharField(max_length=100, blank=True)
-    organizer_name = models.CharField(max_length=100)
+    organizer_name = models.CharField(max_length=100, blank=True)
+    sogwaran = models.CharField(max_length=500, blank=True)
     khitabat = models.CharField(max_length=100)
     venue = models.ForeignKey(Venue, null=True, blank=True, on_delete=models.PROTECT)
     other_venue = models.CharField(max_length=150, blank=True)
@@ -114,7 +115,7 @@ class Marhoomeen(models.Model):
     booking = models.ForeignKey(
         Booking, related_name="marhoomeen", on_delete=models.CASCADE
     )
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=200)
 
     def __str__(self):
         return self.name

@@ -6,7 +6,7 @@ from PIL import Image, ImageOps
 from rest_framework import serializers
 
 MAX_UPLOAD_MB = 10
-MAX_SIDE = 1600
+MAX_SIDE = 2000
 ALLOWED_FORMATS = {"JPEG", "PNG", "WEBP"}
 
 

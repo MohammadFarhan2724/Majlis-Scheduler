@@ -38,6 +38,7 @@ export default function BookingForm() {
   const [organizer, setOrganizer] = useState('')
   const [isaal, setIsaal] = useState(false)
   const [names, setNames] = useState([''])
+  const [sogwaran, setSogwaran] = useState('')
   const [khitabat, setKhitabat] = useState('')
   const [venue, setVenue] = useState('')
   const [otherVenue, setOtherVenue] = useState('')
@@ -87,6 +88,7 @@ export default function BookingForm() {
 
   const lang = i18n.language
   const months = t('hijriMonths', { returnObjects: true })
+  const withIsaal = kind === 'majlis' && isaal
   const dayInfo = date
     ? calendars[date.slice(0, 7)]?.find((d) => d.date === date)
     : null
@@ -123,9 +125,12 @@ export default function BookingForm() {
     if (!category) e.category = need
     else if (category === 'other' && !otherCategory.trim())
       e.otherCategory = need
-    if (!organizer.trim()) e.organizer = need
-    if (kind === 'majlis' && isaal && !names.some((n) => n.trim()))
-      e.names = t('err_need_name')
+    if (withIsaal) {
+      if (!names.some((n) => n.trim())) e.names = t('err_need_name')
+      if (!sogwaran.trim()) e.sogwaran = need
+    } else if (!organizer.trim()) {
+      e.organizer = need
+    }
     if (!khitabat.trim()) e.khitabat = need
     if (venue === '') e.venue = need
     else if (venue === 'other' && !otherVenue.trim()) e.otherVenue = need
@@ -157,16 +162,16 @@ export default function BookingForm() {
     body.append('kind', kind)
     body.append('category', category)
     if (category === 'other') body.append('other_category', otherCategory.trim())
-    body.append('organizer_name', organizer.trim())
+    if (withIsaal) body.append('sogwaran', sogwaran.trim())
+    else body.append('organizer_name', organizer.trim())
     body.append('khitabat', khitabat.trim())
     if (venue === 'other') body.append('other_venue', otherVenue.trim())
     else body.append('venue', venue)
     body.append('date', date)
     body.append('time_slot', timeSlot)
     body.append('parcha', image)
-    const withNames = kind === 'majlis' && isaal
-    body.append('isaal_e_sawaab', withNames ? 'true' : 'false')
-    if (withNames) {
+    body.append('isaal_e_sawaab', withIsaal ? 'true' : 'false')
+    if (withIsaal) {
       names
         .map((n) => n.trim())
         .filter(Boolean)
@@ -255,69 +260,85 @@ export default function BookingForm() {
           )}
         </Field>
 
-        <Field id="organizer" label={t('organizer')} error={errors.organizer}>
-          <input
-            id="organizer"
-            dir="auto"
-            type="text"
-            maxLength={100}
-            value={organizer}
-            onChange={(e) => setOrganizer(e.target.value)}
-          />
-        </Field>
-
         {kind === 'majlis' && (
-          <div className="names-block">
-            <label className="check-row">
-              <input
-                type="checkbox"
-                checked={isaal}
-                onChange={(e) => setIsaal(e.target.checked)}
+          <label className="check-row">
+            <input
+              type="checkbox"
+              checked={isaal}
+              onChange={(e) => setIsaal(e.target.checked)}
+            />
+            {t('isaal')}
+          </label>
+        )}
+
+        {withIsaal ? (
+          <>
+            <div className="names-block">
+              {names.map((n, i) => (
+                <div className="name-row" key={i}>
+                  <input
+                    dir="auto"
+                    type="text"
+                    maxLength={200}
+                    placeholder={t('marhoomName')}
+                    value={n}
+                    onChange={(e) =>
+                      setNames(
+                        names.map((x, j) => (j === i ? e.target.value : x)),
+                      )
+                    }
+                  />
+                  {i > 0 && (
+                    <button
+                      type="button"
+                      className="remove-btn"
+                      onClick={() => setNames(names.filter((_, j) => j !== i))}
+                    >
+                      {t('remove')}
+                    </button>
+                  )}
+                </div>
+              ))}
+              {errors.names && (
+                <div className="field-error" role="alert">
+                  {errors.names}
+                </div>
+              )}
+              <button
+                type="button"
+                className="btn-secondary small"
+                onClick={() => setNames([...names, ''])}
+              >
+                {t('addMore')}
+              </button>
+            </div>
+
+            <Field
+              id="sogwaran"
+              label={t('sogwaran')}
+              hint={t('sogwaranHelp')}
+              error={errors.sogwaran}
+            >
+              <textarea
+                id="sogwaran"
+                dir="auto"
+                maxLength={500}
+                value={sogwaran}
+                onChange={(e) => setSogwaran(e.target.value)}
               />
-              {t('isaal')}
-            </label>
-            {isaal && (
-              <>
-                {names.map((n, i) => (
-                  <div className="name-row" key={i}>
-                    <input
-                      dir="auto"
-                      type="text"
-                      maxLength={100}
-                      placeholder={t('marhoomName')}
-                      value={n}
-                      onChange={(e) =>
-                        setNames(
-                          names.map((x, j) => (j === i ? e.target.value : x)),
-                        )
-                      }
-                    />
-                    {i > 0 && (
-                      <button
-                        type="button"
-                        className="remove-btn"
-                        onClick={() => setNames(names.filter((_, j) => j !== i))}
-                      >
-                        {t('remove')}
-                      </button>
-                    )}
-                  </div>
-                ))}
-                {errors.names && (
-                  <div className="field-error" role="alert">
-                    {errors.names}
-                  </div>
-                )}
-                <button
-                  type="button"
-                  className="btn-secondary small"
-                  onClick={() => setNames([...names, ''])}
-                >
-                  {t('addMore')}
-                </button>
-              </>
-            )}
-          </div>
+            </Field>
+          </>
+        ) : (
+          <Field id="organizer" label={t('organizer')} error={errors.organizer}>
+            <input
+              id="organizer"
+              dir="auto"
+              type="text"
+              maxLength={100}
+              value={organizer}
+              onChange={(e) => setOrganizer(e.target.value)}
+            />
+          </Field>
         )}
 
         <Field id="khitabat" label={t('khitabat')} error={errors.khitabat}>

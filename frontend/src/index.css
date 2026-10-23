@@ -511,3 +511,28 @@ html[lang='ur'] body {
 .map-btn {
   margin-top: 14px;
 }
+.card-body {
+  grid-template-columns: 36% 1fr;
+}
+
+.card-photo {
+  aspect-ratio: 9 / 16;
+  height: auto;
+  min-height: 0;
+  object-fit: contain;
+  background: #eef0ee;
+  align-self: start;
+}
+
+.parcha {
+  height: auto;
+  margin: 12px 0;
+}
+
+.clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
