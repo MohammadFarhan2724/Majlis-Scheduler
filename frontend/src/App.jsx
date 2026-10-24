@@ -10,6 +10,7 @@ import BookingForm from './pages/BookingForm'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ThemeToggle from './components/ThemeToggle'
 
 // the intro plays when the app starts on the home page, once per start
 function shouldShowSplash() {
@@ -40,7 +41,10 @@ export default function App() {
     <AuthProvider>
       <div className={onAccount ? 'app-bg bg-jamkaran' : 'app-bg bg-pattern'} />
       <div className={onAccount ? 'page page-account' : 'page'}>
-        <LanguageSwitcher />
+        <div className="top-bar">
+          <LanguageSwitcher />
+          <ThemeToggle />
+        </div>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/majlis/:id" element={<BookingDetail />} />

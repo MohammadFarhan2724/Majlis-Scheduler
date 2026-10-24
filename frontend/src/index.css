@@ -673,3 +673,202 @@ html[lang='ur'] body {
   text-align: center;
   padding: 24px 8px;
 }
+
+/* no sheet: the pattern shows directly, on every page including My Account */
+.page,
+.page-account {
+  background: transparent;
+}
+
+/* language buttons: a light frosted strip instead of a solid block */
+.lang-switcher {
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(6px);
+  border-radius: 16px;
+}
+
+/* plain text that now sits straight on the pattern gets a soft white glow, so it stays readable */
+.page h1,
+.page .list-title,
+.page .back-link,
+.page .switch-link,
+.page .field > label,
+.page .hint,
+.page .period-title,
+.page .check-row,
+.page > p,
+.page .empty-note {
+  text-shadow: 0 0 4px #fff, 0 0 8px #fff, 0 0 12px #fff;
+}
+
+.app-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.lang-switcher {
+  background: transparent;
+  backdrop-filter: none;
+  border-radius: 0;
+  padding: 8px 0;
+}
+
+.lang-btn {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* ---------- the pictures change with the theme ---------- */
+.bg-pattern {
+  background-image: url('./assets/bg-light.jpg');
+}
+
+/* ---------- top bar: language buttons and the theme button ---------- */
+.top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.lang-switcher {
+  position: static;
+}
+
+.theme-btn {
+  display: block;
+  width: fit-content;
+  margin: 0 0 8px;
+  margin-inline-start: auto;
+  min-height: 40px;
+  padding: 6px 16px;
+  font-size: 0.95rem;
+  border: 2px solid var(--accent);
+  background: #fff;
+  color: var(--accent);
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+
+/* ---------- dark mode ---------- */
+:root[data-theme='dark'] {
+  --bg: #10131a;
+  --text: #f3f3ef;
+  --accent: #6fd8bd;
+  --veil: rgba(8, 10, 16, 0.6);
+  --glow: #000;
+  color-scheme: dark;
+}
+
+[data-theme='dark'] .bg-pattern {
+  background-image: url('./assets/bg-dark.jpg');
+}
+
+[data-theme='dark'] .bg-jamkaran::after {
+  background: rgba(8, 10, 16, 0.35);
+}
+
+/* dark surfaces */
+[data-theme='dark'] .card,
+[data-theme='dark'] .today,
+[data-theme='dark'] .profile-box,
+[data-theme='dark'] .lang-btn,
+[data-theme='dark'] .btn-secondary,
+[data-theme='dark'] .theme-btn,
+[data-theme='dark'] .show-btn,
+[data-theme='dark'] .slot-btn,
+[data-theme='dark'] .remove-btn,
+[data-theme='dark'] .danger-outline-btn,
+[data-theme='dark'] .field input,
+[data-theme='dark'] .field select,
+[data-theme='dark'] .field textarea,
+[data-theme='dark'] .password-field input,
+[data-theme='dark'] .name-row input {
+  background: #1c2230;
+}
+
+[data-theme='dark'] .card,
+[data-theme='dark'] .today,
+[data-theme='dark'] .profile-box,
+[data-theme='dark'] .field input,
+[data-theme='dark'] .field select,
+[data-theme='dark'] .field textarea,
+[data-theme='dark'] .password-field input,
+[data-theme='dark'] .name-row input {
+  color: var(--text);
+}
+
+[data-theme='dark'] .card,
+[data-theme='dark'] .tabs,
+[data-theme='dark'] .card-actions,
+[data-theme='dark'] .card-note {
+  border-color: #3a4458;
+}
+
+[data-theme='dark'] .field input,
+[data-theme='dark'] .field select,
+[data-theme='dark'] .field textarea,
+[data-theme='dark'] .password-field input,
+[data-theme='dark'] .name-row input {
+  border-color: #6b7690;
+}
+
+/* filled buttons keep white text on a deep green */
+[data-theme='dark'] .btn-primary,
+[data-theme='dark'] .lang-btn.active,
+[data-theme='dark'] .slot-btn.selected {
+  background: #1f8a72;
+  border-color: #1f8a72;
+  color: #fff;
+}
+
+[data-theme='dark'] .badge {
+  background: #1f8a72;
+}
+
+/* softer grey text */
+[data-theme='dark'] .hint,
+[data-theme='dark'] .card-details dt,
+[data-theme='dark'] .card-text .label,
+[data-theme='dark'] .profile-mobile,
+[data-theme='dark'] .tab {
+  color: #b9c0cf;
+}
+
+[data-theme='dark'] .tab.active {
+  color: var(--accent);
+}
+
+/* messages and delete buttons */
+[data-theme='dark'] .error-box {
+  background: #3a1a18;
+  color: #ffb4aa;
+  border-color: #d9534f;
+}
+
+[data-theme='dark'] .success-box {
+  background: #12372e;
+  color: #bdf0e0;
+  border-color: var(--accent);
+}
+
+[data-theme='dark'] .field-error,
+[data-theme='dark'] .taken-note {
+  color: #ffb4aa;
+}
+
+[data-theme='dark'] .remove-btn,
+[data-theme='dark'] .danger-outline-btn {
+  color: #ffb4aa;
+  border-color: #ffb4aa;
+}
+
+[data-theme='dark'] .danger-btn {
+  background: #b3261e;
+  border-color: #b3261e;
+}
+
+[data-theme='dark'] .card-photo {
+  background: #2a3040;
+}

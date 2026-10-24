@@ -3,7 +3,7 @@ import { loadBookings } from '../prefetch'
 import introVideo from '../assets/intro.mp4'
 import posterImage from '../assets/background.jpg'
 
-const SPLASH_SECONDS = 10 // change this number to make it shorter or longer
+const SPLASH_SECONDS = 6 // change this number to make it shorter or longer
 
 export default function Splash({ onDone }) {
   const [fading, setFading] = useState(false)

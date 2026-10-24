@@ -1,5 +1,7 @@
 {
   "appName": "Majlis Scheduler",
+  "darkMode": "Dark mode",
+  "lightMode": "Light mode",
   "myAccount": "My Account",
   "myMajlis": "My Majlis",
   "myMehfil": "My Mehfil",

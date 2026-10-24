@@ -102,12 +102,6 @@ export default function Home() {
       {bookings && bookings.length === 0 && <p>{t('noUpcoming')}</p>}
       {bookings &&
         bookings.map((b) => <BookingCard key={b.id} booking={b} />)}
-
-      {isLoggedIn && (
-        <button type="button" className="btn-secondary logout-btn" onClick={logout}>
-          {t('logout')}
-        </button>
-      )}
     </>
   )
 }
