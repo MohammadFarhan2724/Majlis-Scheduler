@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api, mediaPath, translateError } from '../api'
-import { invalidateBookings } from '../prefetch'
+import { cachedOptions, loadOptions, refreshBookings } from '../prefetch'
 
 const PERIODS = ['morning', 'afternoon', 'evening']
 
@@ -31,7 +31,7 @@ export default function BookingForm() {
   const { id } = useParams()
   const editing = Boolean(id)
 
-  const [options, setOptions] = useState(null)
+    const [options, setOptions] = useState(() => cachedOptions())
   const [loadFailed, setLoadFailed] = useState(false)
   const [calendars, setCalendars] = useState({})
   const [original, setOriginal] = useState(null)
@@ -58,7 +58,7 @@ export default function BookingForm() {
 
   // lists (majlis types, venues, time slots) come from the backend
   useEffect(() => {
-    api('/options/')
+    loadOptions()
       .then(setOptions)
       .catch(() => setLoadFailed(true))
   }, [])
@@ -230,7 +230,7 @@ export default function BookingForm() {
         method: editing ? 'PATCH' : 'POST',
         body,
       })
-      invalidateBookings() // so the home list shows the change
+      await refreshBookings() // so the home list shows the change
       navigate(editing ? '/account' : '/', { state: { saved: true } })
     } catch (err) {
       setFormError(translateError(err, t))

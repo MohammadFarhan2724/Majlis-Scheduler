@@ -76,6 +76,7 @@ class BookingViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         instance.parcha.delete(save=False)
+        instance.parcha_thumb.delete(save=False)
         instance.delete()
 
 

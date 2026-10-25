@@ -22,7 +22,7 @@ export default function BookingCard({ booking: b, footer }) {
         <div className="card-body">
           <img
             className="card-photo"
-            src={mediaPath(b.parcha)}
+            src={mediaPath(b.parcha_thumb || b.parcha)}
             alt=""
             loading="lazy"
           />

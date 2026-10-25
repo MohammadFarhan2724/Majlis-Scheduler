@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { api } from '../api'
 import { formatDate } from '../dates'
+import { cachedToday, loadToday } from '../prefetch'
 
 export default function TodayWidget() {
   const { t, i18n } = useTranslation()
-  const [today, setToday] = useState(null)
+  const [today, setToday] = useState(() => cachedToday())
 
   useEffect(() => {
-    api('/today/')
+    loadToday()
       .then(setToday)
       .catch(() => {})
   }, [])

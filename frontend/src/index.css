@@ -687,20 +687,6 @@ html[lang='ur'] body {
   border-radius: 16px;
 }
 
-/* plain text that now sits straight on the pattern gets a soft white glow, so it stays readable */
-.page h1,
-.page .list-title,
-.page .back-link,
-.page .switch-link,
-.page .field > label,
-.page .hint,
-.page .period-title,
-.page .check-row,
-.page > p,
-.page .empty-note {
-  text-shadow: 0 0 4px #fff, 0 0 8px #fff, 0 0 12px #fff;
-}
-
 .app-bg::after {
   content: '';
   position: absolute;
@@ -871,4 +857,106 @@ html[lang='ur'] body {
 
 [data-theme='dark'] .card-photo {
   background: #2a3040;
+}
+
+:root {
+  --chip: rgba(255, 255, 255, 0.8);
+}
+
+:root[data-theme='dark'] {
+  --chip: rgba(16, 19, 26, 0.72);
+}
+
+.page h1,
+.page .list-title,
+.back-link,
+.empty-note {
+  display: inline-block;
+  max-width: 100%;
+  background: var(--chip);
+  backdrop-filter: blur(6px);
+  padding: 6px 14px;
+  border-radius: 12px;
+}
+
+/* smaller loose text: a thin shadow in the opposite colour */
+.page .switch-link,
+.page .field > label,
+.page .hint,
+.page .period-title,
+.page .check-row {
+  text-shadow: 0 0 3px var(--glow), 0 0 8px var(--glow);
+}
+
+.splash {
+  background: #06130f;
+}
+
+/* ---------- animations ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+
+.reveal.shown {
+  opacity: 1;
+  transform: none;
+}
+
+.route-fade {
+  animation: fade-in 0.35s ease both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.btn-primary,
+.btn-secondary,
+.lang-btn,
+.slot-btn,
+.theme-btn {
+  transition: transform 0.12s ease, background-color 0.2s ease;
+}
+
+.btn-primary:active,
+.btn-secondary:active,
+.lang-btn:active,
+.slot-btn:not(:disabled):active,
+.theme-btn:active {
+  transform: scale(0.97);
+}
+
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:active {
+  transform: scale(0.99);
+}
+
+@media (hover: hover) {
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+  }
+}
+
+/* people who turn off motion on their phone see no animation */
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .route-fade {
+    animation: none;
+  }
 }

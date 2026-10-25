@@ -359,6 +359,18 @@ class ImageTests(ApiTestBase):
             "/api/bookings/", payload(parcha=fake), format="multipart")
         self.assertEqual(r.status_code, 400)
 
+    def test_thumbnail_is_small(self):
+        buf = io.BytesIO()
+        Image.new("RGB", (1200, 2000), "white").save(buf, "PNG")
+        big = SimpleUploadedFile("big.png", buf.getvalue(), content_type="image/png")
+        self.login_as(self.user1)
+        r = self.client.post(
+            "/api/bookings/", payload(parcha=big), format="multipart")
+        self.assertEqual(r.status_code, 201)
+        self.assertTrue(r.data["parcha_thumb"])
+        with Booking.objects.get().parcha_thumb.open() as f:
+            self.assertLessEqual(Image.open(f).width, 480)
+
 
 class ThrottleTests(ApiTestBase):
     def test_login_is_limited(self):

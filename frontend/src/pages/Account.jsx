@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { api } from '../api'
 import { useAuth } from '../auth/AuthContext'
 import BookingCard from '../components/BookingCard'
-import { invalidateBookings } from '../prefetch'
+import { refreshBookings } from '../prefetch'
 
 export default function Account() {
   const { t } = useTranslation()
@@ -68,7 +68,7 @@ export default function Account() {
     setActionError('')
     try {
       await api(`/bookings/${id}/`, { method: 'DELETE' })
-      invalidateBookings()
+      refreshBookings()
       setLoaded((old) => ({
         ...old,
         data: old.data ? old.data.filter((b) => b.id !== id) : old.data,

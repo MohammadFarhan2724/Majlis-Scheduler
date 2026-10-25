@@ -12,6 +12,7 @@ class Command(BaseCommand):
         old = Booking.objects.filter(date__lt=cutoff)
         count = old.count()
         for b in old:
-            b.parcha.delete(save=False)  # removes the image file too
+            b.parcha.delete(save=False)
+            b.parcha_thumb.delete(save=False)  # removes the image file too
             b.delete()
         self.stdout.write(f"Deleted {count} old bookings")

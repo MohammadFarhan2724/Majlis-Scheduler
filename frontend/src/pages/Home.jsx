@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { loadBookings } from '../prefetch'
 import { useAuth } from '../auth/AuthContext'
 import BookingCard from '../components/BookingCard'
+import Reveal from '../components/Reveal'
 import TodayWidget from '../components/TodayWidget'
+import { cachedBookings, loadBookings, loadOptions } from '../prefetch'
 
 const PERIODS = ['morning', 'afternoon', 'evening']
 
@@ -25,6 +26,14 @@ export default function Home() {
     Boolean(location.state && location.state.saved),
   )
 
+  // show what we already have at once, then refresh quietly
+  const [bookings, setBookings] = useState(() => {
+    const cached = cachedBookings()
+    return cached ? sortBookings(cached) : null
+  })
+  const [failed, setFailed] = useState(false)
+  const [reloadKey, setReloadKey] = useState(0)
+
   useEffect(() => {
     if (!showSaved) return undefined
     // clear the router state, so a page reload does not show the message again
@@ -33,13 +42,10 @@ export default function Home() {
     return () => clearTimeout(timer)
   }, [showSaved])
 
-  const [bookings, setBookings] = useState(null)
-  const [failed, setFailed] = useState(false)
-  const [reloadKey, setReloadKey] = useState(0)
-
   useEffect(() => {
     let cancelled = false
-      loadBookings(reloadKey > 0)
+    loadOptions().catch(() => {}) // so the booking form opens instantly
+    loadBookings(reloadKey > 0)
       .then((data) => {
         if (!cancelled) setBookings(sortBookings(data))
       })
@@ -59,8 +65,13 @@ export default function Home() {
 
   return (
     <>
-      <h1>{t('appName')}</h1>
-      <TodayWidget />
+      <Reveal>
+        <h1>{t('appName')}</h1>
+      </Reveal>
+
+      <Reveal delay={80}>
+        <TodayWidget />
+      </Reveal>
 
       {showSaved && (
         <div className="success-box" role="status">
@@ -68,27 +79,31 @@ export default function Home() {
         </div>
       )}
 
-      {isLoggedIn ? (
-                <div className="stack">
-          <Link className="btn-primary" to="/new">
-            {t('scheduleYours')}
-          </Link>
-          <Link className="btn-secondary" to="/account">
-            {t('myAccount')}
-          </Link>
-        </div>
-      ) : (
-        <div className="stack">
-          <Link className="btn-primary" to="/login">
-            {t('login')}
-          </Link>
-          <Link className="btn-secondary" to="/register">
-            {t('register')}
-          </Link>
-        </div>
-      )}
+      <Reveal delay={160}>
+        {isLoggedIn ? (
+          <div className="stack">
+            <Link className="btn-primary" to="/new">
+              {t('scheduleYours')}
+            </Link>
+            <Link className="btn-secondary" to="/account">
+              {t('myAccount')}
+            </Link>
+          </div>
+        ) : (
+          <div className="stack">
+            <Link className="btn-primary" to="/login">
+              {t('login')}
+            </Link>
+            <Link className="btn-secondary" to="/register">
+              {t('register')}
+            </Link>
+          </div>
+        )}
+      </Reveal>
 
-      <h2 className="list-title">{t('upcomingTitle')}</h2>
+      <Reveal delay={240}>
+        <h2 className="list-title">{t('upcomingTitle')}</h2>
+      </Reveal>
 
       {failed && (
         <div className="error-box" role="alert">
@@ -99,9 +114,15 @@ export default function Home() {
         </div>
       )}
       {!failed && bookings === null && <p>{t('pleaseWait')}</p>}
-      {bookings && bookings.length === 0 && <p>{t('noUpcoming')}</p>}
+      {bookings && bookings.length === 0 && (
+        <p className="empty-note">{t('noUpcoming')}</p>
+      )}
       {bookings &&
-        bookings.map((b) => <BookingCard key={b.id} booking={b} />)}
+        bookings.map((b, i) => (
+          <Reveal key={b.id} delay={300 + Math.min(i, 5) * 90}>
+            <BookingCard booking={b} />
+          </Reveal>
+        ))}
     </>
   )
 }

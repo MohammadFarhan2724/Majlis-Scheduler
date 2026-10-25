@@ -4,13 +4,13 @@ import AuthProvider from './auth/AuthProvider'
 import LanguageSwitcher from './components/LanguageSwitcher'
 import RequireAuth from './components/RequireAuth'
 import Splash from './components/Splash'
+import ThemeToggle from './components/ThemeToggle'
 import Account from './pages/Account'
 import BookingDetail from './pages/BookingDetail'
 import BookingForm from './pages/BookingForm'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
-import ThemeToggle from './components/ThemeToggle'
 
 // the intro plays when the app starts on the home page, once per start
 function shouldShowSplash() {
@@ -40,42 +40,46 @@ export default function App() {
   return (
     <AuthProvider>
       <div className={onAccount ? 'app-bg bg-jamkaran' : 'app-bg bg-pattern'} />
-      <div className={onAccount ? 'page page-account' : 'page'}>
-        <div className="top-bar">
-          <LanguageSwitcher />
-          <ThemeToggle />
+      {!showSplash && (
+        <div className={onAccount ? 'page page-account' : 'page'}>
+          <div className="top-bar">
+            <LanguageSwitcher />
+            <ThemeToggle />
+          </div>
+          <div key={location.pathname} className="route-fade">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/majlis/:id" element={<BookingDetail />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route
+                path="/new"
+                element={
+                  <RequireAuth>
+                    <BookingForm />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/edit/:id"
+                element={
+                  <RequireAuth>
+                    <BookingForm />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/account"
+                element={
+                  <RequireAuth>
+                    <Account />
+                  </RequireAuth>
+                }
+              />
+            </Routes>
+          </div>
         </div>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/majlis/:id" element={<BookingDetail />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route
-            path="/new"
-            element={
-              <RequireAuth>
-                <BookingForm />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/edit/:id"
-            element={
-              <RequireAuth>
-                <BookingForm />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/account"
-            element={
-              <RequireAuth>
-                <Account />
-              </RequireAuth>
-            }
-          />
-        </Routes>
-      </div>
+      )}
       {showSplash && <Splash onDone={finishSplash} />}
     </AuthProvider>
   )

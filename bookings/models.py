@@ -84,6 +84,7 @@ class Booking(models.Model):
     time_slot = models.CharField(max_length=20, choices=TimeSlot.choices)
     period = models.CharField(max_length=10, choices=Period.choices, editable=False)
     parcha = models.ImageField(upload_to="parcha/")
+    parcha_thumb = models.ImageField(upload_to="thumbs/", blank=True)
     isaal_e_sawaab = models.BooleanField(default=False)
     after_majlis = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

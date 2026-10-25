@@ -32,3 +32,15 @@ def clean_image(upload):
         raise serializers.ValidationError(
             "Please upload a valid JPG, PNG or WEBP image.")
     return ContentFile(buf.getvalue(), name=f"{uuid.uuid4().hex}.jpg")
+
+THUMB_WIDTH = 480
+
+
+def make_thumbnail(image_file):
+    image_file.seek(0)
+    img = Image.open(image_file)
+    img.thumbnail((THUMB_WIDTH, THUMB_WIDTH * 2))  # keeps the shape
+    buf = io.BytesIO()
+    img.save(buf, "JPEG", quality=80, optimize=True)
+    image_file.seek(0)
+    return ContentFile(buf.getvalue(), name=f"{uuid.uuid4().hex}.jpg")

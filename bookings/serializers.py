@@ -6,7 +6,7 @@ from .hijri import hijri_for
 from .models import (
     SLOT_PERIOD, Booking, MajlisType, Marhoomeen, MehfilType, Venue,
 )
-from .images import clean_image
+from .images import clean_image, make_thumbnail
 
 
 class VenueSerializer(serializers.ModelSerializer):
@@ -30,10 +30,10 @@ class BookingSerializer(serializers.ModelSerializer):
         fields = [
             "id", "kind", "category", "other_category", "organizer_name", "sogwaran",
             "khitabat", "venue", "venue_detail", "other_venue", "date",
-            "hijri_date", "time_slot", "period", "parcha", "isaal_e_sawaab",
+            "hijri_date", "time_slot", "period", "parcha","parcha_thumb", "isaal_e_sawaab",
             "marhoomeen", "marhoomeen_names", "after_majlis", "is_mine",
         ]
-        read_only_fields = ["period"]
+        read_only_fields = ["period", "parcha_thumb"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -110,20 +110,26 @@ class BookingSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
+        if validated_data.get("parcha"):
+            validated_data["parcha_thumb"] = make_thumbnail(validated_data["parcha"])
         names = validated_data.pop("marhoomeen_names", [])
         try:
             with transaction.atomic():
                 booking = Booking.objects.create(**validated_data)
                 Marhoomeen.objects.bulk_create(
-                    [Marhoomeen(booking=booking, name=n) for n in names])
+                [Marhoomeen(booking=booking, name=n) for n in names])
         except IntegrityError:
             raise serializers.ValidationError("This spot is already taken.")
         return booking
 
     def update(self, instance, validated_data):
         names = validated_data.pop("marhoomeen_names", None)
-        if "parcha" in validated_data and instance.parcha:
-            instance.parcha.delete(save=False)
+        if "parcha" in validated_data:
+            if instance.parcha:
+                instance.parcha.delete(save=False)
+            if instance.parcha_thumb:
+                instance.parcha_thumb.delete(save=False)
+            validated_data["parcha_thumb"] = make_thumbnail(validated_data["parcha"])
         try:
             with transaction.atomic():
                 for field, value in validated_data.items():
