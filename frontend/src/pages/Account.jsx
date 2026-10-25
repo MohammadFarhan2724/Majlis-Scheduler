@@ -211,7 +211,9 @@ export default function Account() {
         items.map((b) => (
           <BookingCard key={b.id} booking={b} footer={footerFor(b)} />
         ))}
-
+      <Link className="btn-secondary logout-btn" to="/change-password">
+        {t('changePassword')}
+      </Link>
       <button type="button" className="btn-secondary logout-btn" onClick={handleLogout}>
         {t('logout')}
       </button>

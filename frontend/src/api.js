@@ -81,6 +81,8 @@ const KNOWN_ERRORS = [
   ['entirely numeric', 'err_pw_numeric'],
   ['sogwaran names', 'err_sogwaran_needed'],
   ['organizer name', 'err_organizer_needed'],
+  ['Wrong password', 'err_wrong_old_password'],
+  ['too similar', 'err_pw_similar'],
   ['required', 'err_required'],
 ]
 

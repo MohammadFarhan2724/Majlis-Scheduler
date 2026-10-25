@@ -960,3 +960,65 @@ html[lang='ur'] body {
     animation: none;
   }
 }
+
+/* ---------- text size: normal is 15px, the slider scales it ---------- */
+:root {
+  font-size: calc(15px * var(--font-scale, 1));
+}
+
+.top-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.top-row .theme-btn {
+  flex: none;
+  margin: 0;
+}
+
+.size-control {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 4px 14px;
+  background: var(--chip);
+  backdrop-filter: blur(6px);
+  border-radius: 999px;
+}
+
+.size-control input {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--accent);
+}
+
+.size-a {
+  font-weight: 700;
+  line-height: 1;
+}
+
+.size-a.small {
+  font-size: 13px;
+}
+
+.size-a.big {
+  font-size: 22px;
+}
+
+.info-box {
+  background: #fff;
+  color: var(--text);
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+[data-theme='dark'] .info-box {
+  background: #1c2230;
+}

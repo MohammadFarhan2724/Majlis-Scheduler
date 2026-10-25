@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import { translateError } from '../api'
@@ -7,8 +7,7 @@ import PasswordInput from '../components/PasswordInput'
 
 export default function Login() {
   const { t } = useTranslation()
-  const { login, isLoggedIn } = useAuth()
-  const navigate = useNavigate()
+  const { login, isLoggedIn, mustChangePassword } = useAuth()
   const [mobile, setMobile] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -20,15 +19,15 @@ export default function Login() {
     setBusy(true)
     try {
       await login(mobile, password)
-      navigate('/')
     } catch (err) {
-       setError(translateError(err, t))
-    } finally {
+      setError(translateError(err, t))
       setBusy(false)
     }
   }
 
-if (isLoggedIn) return <Navigate to="/" replace />
+  if (isLoggedIn) {
+    return <Navigate to={mustChangePassword ? '/change-password' : '/'} replace />
+  }
 
   return (
     <>
@@ -67,6 +66,9 @@ if (isLoggedIn) return <Navigate to="/" replace />
           {busy ? t('pleaseWait') : t('login')}
         </button>
       </form>
+      <p className="switch-link">
+        <Link to="/forgot-password">{t('forgotPassword')}</Link>
+      </p>
       <p className="switch-link">
         {t('newHere')} <Link to="/register">{t('register')}</Link>
       </p>

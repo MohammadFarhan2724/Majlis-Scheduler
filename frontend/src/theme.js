@@ -24,3 +24,28 @@ export function saveTheme(theme) {
     // ignore
   }
 }
+
+const SCALE_KEY = 'fontScale'
+
+// text size in percent: 85 to 150, normal is 100
+export function getFontScale() {
+  try {
+    const saved = Number(localStorage.getItem(SCALE_KEY))
+    if (saved >= 85 && saved <= 150) return saved
+  } catch {
+    // storage not available: use the normal size
+  }
+  return 100
+}
+
+export function applyFontScale(percent) {
+  document.documentElement.style.setProperty('--font-scale', String(percent / 100))
+}
+
+export function saveFontScale(percent) {
+  try {
+    localStorage.setItem(SCALE_KEY, String(percent))
+  } catch {
+    // ignore
+  }
+}
