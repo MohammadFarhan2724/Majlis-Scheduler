@@ -1,6 +1,6 @@
 import { api } from './api'
 
-const MAX_AGE_MS = 60 * 1000 // reuse a loaded list for one minute
+const MAX_AGE_MS = 60 * 1000 // reuse loaded data for one minute
 
 let pending = null
 let startedAt = 0
@@ -8,6 +8,7 @@ let lastBookings = null
 let optionsPromise = null
 let lastOptions = null
 let lastToday = null
+const calendarCache = new Map()
 
 // ---- the home list ----
 export function cachedBookings() {
@@ -25,9 +26,16 @@ export function loadBookings(force = false) {
   return pending
 }
 
-// reload the list after something changed
+// reload after something changed (also forgets the calendar months)
 export function refreshBookings() {
+  calendarCache.clear()
   return loadBookings(true).catch(() => null)
+}
+
+export function invalidateBookings() {
+  pending = null
+  lastBookings = null
+  calendarCache.clear()
 }
 
 // ---- the lists for the booking form (they rarely change) ----
@@ -59,4 +67,15 @@ export function loadToday() {
     lastToday = data
     return data
   })
+}
+
+// ---- one calendar month: Islamic dates and booked parts of each day ----
+export function loadCalendar(year, month) {
+  const key = `${year}-${String(month).padStart(2, '0')}`
+  const hit = calendarCache.get(key)
+  if (hit && Date.now() - hit.startedAt < MAX_AGE_MS) return hit.promise
+  const promise = api(`/calendar/?year=${year}&month=${month}`)
+  promise.catch(() => calendarCache.delete(key))
+  calendarCache.set(key, { startedAt: Date.now(), promise })
+  return promise
 }

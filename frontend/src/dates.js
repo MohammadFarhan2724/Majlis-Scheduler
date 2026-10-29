@@ -11,3 +11,19 @@ export function formatDate(dateString, lang, withWeekday = false) {
     year: 'numeric',
   })
 }
+
+// short weekday names starting from Sunday
+export function weekdayNames(lang) {
+  const locale = LOCALES[lang] || 'en-IN'
+  // 1 January 2023 was a Sunday
+  return Array.from({ length: 7 }, (_, i) =>
+    new Date(2023, 0, 1 + i).toLocaleDateString(locale, { weekday: 'short' }),
+  )
+}
+
+export function monthTitle(year, month, lang) {
+  return new Date(year, month - 1, 1).toLocaleDateString(
+    LOCALES[lang] || 'en-IN',
+    { month: 'long', year: 'numeric' },
+  )
+}

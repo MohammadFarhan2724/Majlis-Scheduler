@@ -2,7 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api, mediaPath, translateError } from '../api'
-import { cachedOptions, loadOptions, refreshBookings } from '../prefetch'
+import {
+  cachedOptions,
+  loadCalendar,
+  loadOptions,
+  refreshBookings,
+} from '../prefetch'
+import DatePicker from '../components/DatePicker'
 
 const PERIODS = ['morning', 'afternoon', 'evening']
 
@@ -104,7 +110,7 @@ export default function BookingForm() {
     if (calendars[key]) return undefined
     const [year, month] = date.split('-')
     let cancelled = false
-    api(`/calendar/?year=${year}&month=${Number(month)}`)
+    loadCalendar(Number(year), Number(month))
       .then((days) => {
         if (!cancelled) setCalendars((old) => ({ ...old, [key]: days }))
       })
@@ -435,12 +441,11 @@ export default function BookingForm() {
         </Field>
 
         <Field id="date" label={t('date')} error={errors.date}>
-          <input
-            id="date"
-            type="date"
-            min={editing ? undefined : todayString()}
+            <DatePicker
             value={date}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={setDate}
+            today={todayString()}
+            ownDate={original ? original.date : null}
           />
           {dayInfo && (
             <div className="islamic-date">

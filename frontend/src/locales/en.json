@@ -1,5 +1,10 @@
 {
   "appName": "Majlis Scheduler",
+  "calFree": "Free",
+  "calPartial": "One part booked",
+  "calFull": "Full",
+  "calPrev": "Previous month",
+  "calNext": "Next month",
   "forgotPassword": "Forgot password?",
   "forgotTitle": "Forgot password",
   "forgotHelp": "Type your mobile number. Our team will call you on this number to confirm it is you, and give you a temporary password.",
