@@ -1392,3 +1392,39 @@ html[lang='ur'] body {
   border-color: #1f8a72;
   color: #fff;
 }
+
+.action-stack {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.action-stack .map-btn {
+  margin-top: 0;
+}
+
+.cal-options {
+  display: grid;
+  gap: 8px;
+}
+
+.btn-whatsapp {
+  display: block;
+  width: 100%;
+  min-height: 52px;
+  padding: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  color: #fff;
+  background: #128c4a;
+  border: 2px solid #128c4a;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.btn-whatsapp:active {
+  transform: scale(0.97);
+}

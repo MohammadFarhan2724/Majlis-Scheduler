@@ -4,6 +4,14 @@ import { useTranslation } from 'react-i18next'
 import { api, mediaPath } from '../api'
 import { formatDate } from '../dates'
 import Loader from '../components/Loader'
+import {
+  canShareFiles,
+  downloadIcs,
+  googleCalendarUrl,
+  shareText,
+  sharePicture,
+  whatsappUrl,
+} from '../share'
 
 export default function BookingDetail() {
   const { id } = useParams()
@@ -17,6 +25,7 @@ export default function BookingDetail() {
     passed && String(passed.id) === String(id) ? passed : null,
   )
   const [failed, setFailed] = useState(false)
+  const [calOpen, setCalOpen] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -124,14 +133,67 @@ export default function BookingDetail() {
           )}
         </dl>
 
-        <a
-          className="btn-secondary map-btn"
-          href={mapUrl}
-          target="_blank"
-          rel="noreferrer"
-        >
-          {t('openMap')}
-        </a>
+          <div className="action-stack">
+          <a
+            className="btn-whatsapp"
+            href={whatsappUrl(shareText(b, t, lang))}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {t('shareWhatsApp')}
+          </a>
+
+          {canShareFiles() && (
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() =>
+                sharePicture(b, shareText(b, t, lang), mediaPath(b.parcha)).catch(
+                  () => {},
+                )
+              }
+            >
+              {t('sharePicture')}
+            </button>
+          )}
+
+          <button
+            type="button"
+            className="btn-secondary"
+            aria-expanded={calOpen}
+            onClick={() => setCalOpen(!calOpen)}
+          >
+            {t('addToCalendar')}
+          </button>
+          {calOpen && (
+            <div className="cal-options">
+              <a
+                className="btn-secondary"
+                href={googleCalendarUrl(b, t, lang)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {t('googleCalendar')}
+              </a>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => downloadIcs(b, t, lang)}
+              >
+                {t('otherCalendar')}
+              </button>
+            </div>
+          )}
+
+          <a
+            className="btn-secondary map-btn"
+            href={mapUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {t('openMap')}
+          </a>
+        </div>
 
         <p className="card-note">{t('defaultNote')}</p>
       </article>

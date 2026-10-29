@@ -1,5 +1,10 @@
 {
   "appName": "مجلس شیڈیولر",
+  "shareWhatsApp": "واٹس ایپ پر بھیجیں",
+  "sharePicture": "تصویر بھیجیں",
+  "addToCalendar": "کیلنڈر میں شامل کریں",
+  "googleCalendar": "گوگل کیلنڈر",
+  "otherCalendar": "دوسرا کیلنڈر ایپ",
   "searchPlaceholder": "نام، مقام، خطابت سے تلاش کریں...",
   "filters": "فلٹر",
   "whenAny": "کوئی بھی تاریخ",

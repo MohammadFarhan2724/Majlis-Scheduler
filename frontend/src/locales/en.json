@@ -1,5 +1,10 @@
 {
   "appName": "Majlis Scheduler",
+  "shareWhatsApp": "Share on WhatsApp",
+  "sharePicture": "Share picture",
+  "addToCalendar": "Add to calendar",
+  "googleCalendar": "Google Calendar",
+  "otherCalendar": "Other calendar app",
   "searchPlaceholder": "Search by name, venue, Khitabat...",
   "filters": "Filters",
   "whenAny": "Any date",

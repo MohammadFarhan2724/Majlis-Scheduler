@@ -1,5 +1,10 @@
 {
   "appName": "मजलिस शेड्यूलर",
+  "shareWhatsApp": "व्हाट्सऐप पर भेजें",
+  "sharePicture": "फ़ोटो भेजें",
+  "addToCalendar": "कैलेंडर में जोड़ें",
+  "googleCalendar": "गूगल कैलेंडर",
+  "otherCalendar": "दूसरा कैलेंडर ऐप",
   "searchPlaceholder": "नाम, स्थान, ख़िताबत से खोजें...",
   "filters": "फ़िल्टर",
   "whenAny": "कोई भी तारीख़",
