@@ -1,11 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import BookingCard from '../components/BookingCard'
+import FilterBar from '../components/FilterBar'
+import Loader from '../components/Loader'
 import Reveal from '../components/Reveal'
 import TodayWidget from '../components/TodayWidget'
-import { cachedBookings, loadBookings, loadOptions } from '../prefetch'
+import { todayString } from '../dates'
+import { EMPTY_FILTERS, matches } from '../filters'
+import {
+  cachedBookings,
+  cachedOptions,
+  loadBookings,
+  loadOptions,
+} from '../prefetch'
 
 const PERIODS = ['morning', 'afternoon', 'evening']
 
@@ -31,6 +40,8 @@ export default function Home() {
     const cached = cachedBookings()
     return cached ? sortBookings(cached) : null
   })
+  const [options, setOptions] = useState(() => cachedOptions())
+  const [filters, setFilters] = useState(EMPTY_FILTERS)
   const [failed, setFailed] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
 
@@ -44,7 +55,11 @@ export default function Home() {
 
   useEffect(() => {
     let cancelled = false
-    loadOptions().catch(() => {}) // so the booking form opens instantly
+    loadOptions()
+      .then((data) => {
+        if (!cancelled) setOptions(data)
+      })
+      .catch(() => {})
     loadBookings(reloadKey > 0)
       .then((data) => {
         if (!cancelled) setBookings(sortBookings(data))
@@ -62,6 +77,13 @@ export default function Home() {
     setBookings(null)
     setReloadKey((k) => k + 1)
   }
+
+  const today = todayString()
+  const visible = useMemo(
+    () =>
+      bookings ? bookings.filter((b) => matches(b, filters, today, t)) : [],
+    [bookings, filters, today, t],
+  )
 
   return (
     <>
@@ -105,6 +127,16 @@ export default function Home() {
         <h2 className="list-title">{t('upcomingTitle')}</h2>
       </Reveal>
 
+      {bookings && bookings.length > 0 && (
+        <FilterBar
+          filters={filters}
+          onChange={setFilters}
+          options={options}
+          shown={visible.length}
+          total={bookings.length}
+        />
+      )}
+
       {failed && (
         <div className="error-box" role="alert">
           {t('errorGeneric')}
@@ -113,16 +145,18 @@ export default function Home() {
           </button>
         </div>
       )}
-      {!failed && bookings === null && <p>{t('pleaseWait')}</p>}
+      {!failed && bookings === null && <Loader />}
       {bookings && bookings.length === 0 && (
         <p className="empty-note">{t('noUpcoming')}</p>
       )}
-      {bookings &&
-        bookings.map((b, i) => (
-          <Reveal key={b.id} delay={300 + Math.min(i, 5) * 90}>
-            <BookingCard booking={b} />
-          </Reveal>
-        ))}
+      {bookings && bookings.length > 0 && visible.length === 0 && (
+        <p className="empty-note">{t('noMatch')}</p>
+      )}
+      {visible.map((b, i) => (
+        <Reveal key={b.id} delay={300 + Math.min(i, 5) * 90}>
+          <BookingCard booking={b} />
+        </Reveal>
+      ))}
     </>
   )
 }

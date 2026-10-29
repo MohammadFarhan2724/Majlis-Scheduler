@@ -11,9 +11,10 @@ function pad(n) {
 
 // today: "YYYY-MM-DD", also the first day that can be chosen
 // ownDate: the date of the booking being edited (its own day stays choosable)
-export default function DatePicker({ value, onChange, today, ownDate }) {
+export default function DatePicker({ value, onChange, today, ownDate, mode = 'book' }) {
   const { t, i18n } = useTranslation()
   const lang = i18n.language
+  const filterMode = mode === 'filter'
   const hijriMonths = t('hijriMonths', { returnObjects: true })
 
   const [todayYear, todayMonth] = today.split('-').map(Number)
@@ -113,8 +114,10 @@ export default function DatePicker({ value, onChange, today, ownDate }) {
           const info = byDate[dateStr]
           const past = dateStr < today
           const isOwn = dateStr === ownDate
-          const full = Boolean(info && info.full && !isOwn)
-          const partial = Boolean(info && !info.full && info.taken.length > 0)
+          const full = !filterMode && Boolean(info && info.full && !isOwn)
+          const partial = filterMode
+            ? Boolean(info && info.taken.length > 0)
+            : Boolean(info && !info.full && info.taken.length > 0)
           const classes = ['cal-day']
           if (dateStr === value) classes.push('selected')
           if (dateStr === today) classes.push('today')
@@ -141,18 +144,27 @@ export default function DatePicker({ value, onChange, today, ownDate }) {
       {!days && <div className="hint">{t('pleaseWait')}</div>}
 
       <div className="cal-legend">
-        <span>
-          <i className="dot free" />
-          {t('calFree')}
-        </span>
-        <span>
-          <i className="dot partial" />
-          {t('calPartial')}
-        </span>
-        <span>
-          <i className="dot full" />
-          {t('calFull')}
-        </span>
+        {filterMode ? (
+          <span>
+            <i className="dot partial" />
+            {t('calHasMajlis')}
+          </span>
+        ) : (
+          <>
+            <span>
+              <i className="dot free" />
+              {t('calFree')}
+            </span>
+            <span>
+              <i className="dot partial" />
+              {t('calPartial')}
+            </span>
+            <span>
+              <i className="dot full" />
+              {t('calFull')}
+            </span>
+          </>
+        )}
       </div>
     </div>
   )

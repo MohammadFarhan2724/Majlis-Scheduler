@@ -5,6 +5,7 @@ import { api } from '../api'
 import { useAuth } from '../auth/AuthContext'
 import BookingCard from '../components/BookingCard'
 import { refreshBookings } from '../prefetch'
+import Loader from '../components/Loader'
 
 export default function Account() {
   const { t } = useTranslation()
@@ -205,7 +206,7 @@ export default function Account() {
           </button>
         </div>
       )}
-      {!failed && items === null && <p>{t('pleaseWait')}</p>}
+      {!failed && items === null && <Loader /> }
       {items && items.length === 0 && <p className="empty-note">{t('emptyList')}</p>}
       {items &&
         items.map((b) => (

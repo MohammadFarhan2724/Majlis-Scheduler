@@ -3,6 +3,7 @@ import { Link, useLocation, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api, mediaPath } from '../api'
 import { formatDate } from '../dates'
+import Loader from '../components/Loader'
 
 export default function BookingDetail() {
   const { id } = useParams()
@@ -44,7 +45,7 @@ export default function BookingDetail() {
         {failed ? (
           <div className="error-box">{t('notFound')}</div>
         ) : (
-          <p>{t('pleaseWait')}</p>
+          <Loader />
         )}
       </>
     )

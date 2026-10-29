@@ -9,6 +9,7 @@ import {
   refreshBookings,
 } from '../prefetch'
 import DatePicker from '../components/DatePicker'
+import Loader from '../components/Loader'
 
 const PERIODS = ['morning', 'afternoon', 'evening']
 
@@ -248,7 +249,7 @@ export default function BookingForm() {
 
   if (notMine) return <div className="error-box">{t('notFound')}</div>
   if (loadFailed) return <div className="error-box">{t('errorGeneric')}</div>
-  if (!options || (editing && !original)) return <p>{t('pleaseWait')}</p>
+  if (!options || (editing && !original)) return <Loader />
 
   const shownImage = preview || (original ? mediaPath(original.parcha) : null)
 

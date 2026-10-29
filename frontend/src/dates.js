@@ -27,3 +27,19 @@ export function monthTitle(year, month, lang) {
     { month: 'long', year: 'numeric' },
   )
 }
+
+function pad(n) {
+  return String(n).padStart(2, '0')
+}
+
+// today as "YYYY-MM-DD" in the phone's local time
+export function todayString() {
+  return new Date().toLocaleDateString('en-CA')
+}
+
+// "2026-10-25" plus n days
+export function addDays(dateString, n) {
+  const [y, m, d] = dateString.split('-').map(Number)
+  const date = new Date(y, m - 1, d + n)
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
