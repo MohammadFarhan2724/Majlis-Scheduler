@@ -43,3 +43,14 @@ export function addDays(dateString, n) {
   const date = new Date(y, m - 1, d + n)
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 }
+
+// short form for cards: "Sun, 1 Nov 2026"
+export function formatDateShort(dateString, lang) {
+  const [y, m, d] = dateString.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString(LOCALES[lang] || 'en-IN', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+}

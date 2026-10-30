@@ -1428,3 +1428,126 @@ html[lang='ur'] body {
 .btn-whatsapp:active {
   transform: scale(0.97);
 }
+
+/* ---------- smooth background: soft focus + black vignette ---------- */
+.app-bg {
+  inset: -24px; /* a little bigger than the screen, so the soft edges stay hidden */
+  filter: blur(2px);
+}
+
+.app-bg::after,
+.bg-pattern::after,
+.bg-jamkaran::after,
+[data-theme='dark'] .bg-jamkaran::after {
+  background: radial-gradient(
+    ellipse at 50% 35%,
+    rgba(0, 0, 0, 0.12) 0%,
+    rgba(0, 0, 0, 0.42) 55%,
+    rgba(0, 0, 0, 0.82) 100%
+  );
+}
+
+/* loose text sits on the dark vignette, so it is white in both modes */
+.page .switch-link,
+.page .field > label,
+.page .field > .hint,
+.page .period-title,
+.page .check-row,
+.page .islamic-date {
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+}
+
+.page .switch-link a {
+  color: #fff;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.page .field-error,
+.page .taken-note {
+  color: #ffb4aa;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+}
+
+/* ---------- top bar scrolls away with the page ---------- */
+.top-bar,
+.lang-switcher {
+  position: static;
+}
+
+/* ---------- title and badge inside a card ---------- */
+.card h1,
+.card .detail-title {
+  display: block;
+  background: none;
+  backdrop-filter: none;
+  padding: 0;
+  margin: 8px 0 10px;
+  font-size: 1.5rem;
+}
+
+.card > .badge {
+  display: inline-block;
+}
+
+/* ---------- cards: same size in every language ---------- */
+.card-body {
+  grid-template-columns: 40% 1fr;
+}
+
+.card-photo {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 9 / 16;
+  object-fit: contain;
+  align-self: start;
+}
+
+.card-text {
+  position: relative;
+  min-width: 0;
+}
+
+.card-text-inner {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  -webkit-mask-image: linear-gradient(to bottom, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 88%, transparent 100%);
+}
+
+html[lang='ur'] .card-text-inner {
+  line-height: 1.7;
+}
+
+.card-text-inner .card-type,
+.card-text-inner .card-date,
+.card-text-inner .card-hijri,
+.card-text-inner .card-time {
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.card-text-inner .card-type {
+  font-size: 1.05rem;
+}
+
+.card-text-inner .card-time {
+  margin-bottom: 4px;
+  font-size: 1.05rem;
+}
+
+.card-text-inner .line {
+  display: -webkit-box;
+  margin-top: 4px;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
