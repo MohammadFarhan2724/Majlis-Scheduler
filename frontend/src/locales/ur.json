@@ -1,5 +1,8 @@
 {
   "appName": "مجلس شیڈیولر",
+  "notFoundTitle": "صفحہ نہیں ملا",
+  "notFoundText": "یہ پتہ غلط ہے یا صفحہ ہٹ چکا ہے۔",
+  "goHome": "ہوم پر جائیں",
   "sharePicture": "تصویر بھیجیں",
   "addToCalendar": "کیلنڈر میں شامل کریں",
   "googleCalendar": "گوگل کیلنڈر",

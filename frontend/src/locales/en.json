@@ -1,5 +1,8 @@
 {
   "appName": "Majlis Scheduler",
+  "notFoundTitle": "Page not found",
+  "notFoundText": "This address is wrong, or the page has been removed.",
+  "goHome": "Go to home",
   "shareWhatsApp": "Share on WhatsApp",
   "sharePicture": "Share picture",
   "addToCalendar": "Add to calendar",

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 import AuthProvider from './auth/AuthProvider'
 import LanguageSwitcher from './components/LanguageSwitcher'
@@ -14,6 +14,8 @@ import ForgotPassword from './pages/ForgotPassword'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import { useTranslation } from 'react-i18next'
+import NotFound from './pages/NotFound'
 
 // the intro plays when the app starts on the home page, once per start
 function shouldShowSplash() {
@@ -27,6 +29,12 @@ function shouldShowSplash() {
 
 export default function App() {
   const location = useLocation()
+  const { t, i18n } = useTranslation()
+
+  // the browser tab shows the app name in the chosen language
+  useEffect(() => {
+    document.title = t('appName')
+  }, [t, i18n.language])
   const [showSplash, setShowSplash] = useState(shouldShowSplash)
 
   const finishSplash = useCallback(() => {
@@ -91,6 +99,7 @@ export default function App() {
                   </RequireAuth>
                 }
               />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
         </div>

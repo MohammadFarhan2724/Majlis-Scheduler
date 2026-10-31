@@ -1,5 +1,8 @@
 {
   "appName": "मजलिस शेड्यूलर",
+  "notFoundTitle": "पेज नहीं मिला",
+  "notFoundText": "यह पता ग़लत है या पेज हट चुका है।",
+  "goHome": "होम पर जाएँ",
   "shareWhatsApp": "व्हाट्सऐप पर भेजें",
   "sharePicture": "फ़ोटो भेजें",
   "addToCalendar": "कैलेंडर में जोड़ें",
