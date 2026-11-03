@@ -199,11 +199,6 @@ Open `/admin` and log in with the superuser account.
 - AI helpers: read a pamphlet and fill the form, check pamphlets before they go live, smarter search
 - Area-based booking rules, so more cities and towns can use the app
 
-## Notes
-
-- The live link above uses HTTP for now.
-- The background pictures and the intro video used in the app are for testing. Replace them with media you have the rights to before a wider release.
-
 ## Author
 
 Built by **Mohammad Farhan** for the community in Barabanki.
