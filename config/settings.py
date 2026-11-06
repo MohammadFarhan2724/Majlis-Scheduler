@@ -172,3 +172,8 @@ REST_FRAMEWORK = {
         "booking_create": "10/day",
     },
 }
+
+try:
+    from .local_settings import *
+except ImportError:
+    pass
