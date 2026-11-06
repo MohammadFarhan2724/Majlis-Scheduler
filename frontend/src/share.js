@@ -1,4 +1,5 @@
 import { formatDate } from './dates'
+import { slotLabel } from './slots'
 
 // "after Namaz" slots have no exact time, so the calendar uses these
 const APPROX_TIMES = { after_zohrain: '13:30', after_maghribain: '19:30' }
@@ -23,6 +24,9 @@ function describe(b, t, lang) {
     : b.other_venue
 
   const detailLines = [`${t('khitabatShort')}: ${b.khitabat}`]
+  if (b.contact_number)
+    detailLines.push(`${t('contactShort')}: ${b.contact_number}`)
+  if (b.youtube_url) detailLines.push(`▶ ${b.youtube_url}`)
   if (b.sogwaran) detailLines.push(`${t('sogwaran')}: ${b.sogwaran}`)
   else if (b.organizer_name)
     detailLines.push(`${t('organizerShort')}: ${b.organizer_name}`)
@@ -36,7 +40,7 @@ function describe(b, t, lang) {
     venue,
     gregorian: formatDate(b.date, lang, true),
     islamic: `${h.day} ${months[h.month - 1]} ${h.year} ${t('hijriSuffix')}`,
-    slotLabel: t(`slot_${b.time_slot.replace(':', '')}`),
+    slotLabel: slotLabel(b, t, lang),
     detailLines,
   }
 }
@@ -88,7 +92,10 @@ export async function sharePicture(b, text, imagePath) {
 // ---------- calendar ----------
 
 function eventTimes(b) {
-  const hhmm = APPROX_TIMES[b.time_slot] || b.time_slot
+    const hhmm =
+    b.time_slot === 'other'
+      ? (b.custom_time || '12:00').slice(0, 5)
+      : APPROX_TIMES[b.time_slot] || b.time_slot
   const [hour, minute] = hhmm.split(':').map(Number)
   const [y, m, d] = b.date.split('-').map(Number)
   const format = (date) =>

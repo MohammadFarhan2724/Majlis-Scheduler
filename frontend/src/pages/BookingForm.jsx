@@ -2,14 +2,15 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api, mediaPath, translateError } from '../api'
+import DatePicker from '../components/DatePicker'
+import Loader from '../components/Loader'
 import {
   cachedOptions,
   loadCalendar,
   loadOptions,
   refreshBookings,
 } from '../prefetch'
-import DatePicker from '../components/DatePicker'
-import Loader from '../components/Loader'
+import { periodOfClock } from '../slots'
 
 const PERIODS = ['morning', 'afternoon', 'evening']
 
@@ -38,7 +39,7 @@ export default function BookingForm() {
   const { id } = useParams()
   const editing = Boolean(id)
 
-    const [options, setOptions] = useState(() => cachedOptions())
+  const [options, setOptions] = useState(() => cachedOptions())
   const [loadFailed, setLoadFailed] = useState(false)
   const [calendars, setCalendars] = useState({})
   const [original, setOriginal] = useState(null)
@@ -56,7 +57,10 @@ export default function BookingForm() {
   const [otherVenue, setOtherVenue] = useState('')
   const [date, setDate] = useState('')
   const [timeSlot, setTimeSlot] = useState('')
+  const [customTime, setCustomTime] = useState('')
   const [image, setImage] = useState(null)
+  const [contact, setContact] = useState('')
+  const [youtube, setYoutube] = useState('')
   const [afterMajlis, setAfterMajlis] = useState('')
 
   const [errors, setErrors] = useState({})
@@ -94,6 +98,9 @@ export default function BookingForm() {
         setOtherVenue(b.other_venue)
         setDate(b.date)
         setTimeSlot(b.time_slot)
+        setCustomTime(b.custom_time ? b.custom_time.slice(0, 5) : '')
+        setContact(b.contact_number || '')
+        setYoutube(b.youtube_url || '')
         setAfterMajlis(b.after_majlis)
       })
       .catch(() => {
@@ -147,6 +154,10 @@ export default function BookingForm() {
     : rawTaken
   const dayFull = Boolean(dayInfo && dayInfo.full && !onOriginalDay)
 
+  // the part of the day of a written time
+  const customPeriod =
+    timeSlot === 'other' && customTime ? periodOfClock(customTime) : null
+
   const typeList = options
     ? kind === 'majlis'
       ? options.majlis_types
@@ -188,14 +199,25 @@ export default function BookingForm() {
     else if (venue === 'other' && !otherVenue.trim()) e.otherVenue = need
     if (!date) e.date = need
     else if (date < todayString() && !onOriginalDay) e.date = t('err_past_date')
-    if (!timeSlot) {
+    if (!timeSlot || (timeSlot === 'other' && !customTime)) {
       e.timeSlot = t('err_pick_time')
     } else {
-      const period = options.time_slots.find((s) => s.code === timeSlot)?.period
+      const period =
+        timeSlot === 'other'
+          ? periodOfClock(customTime)
+          : options.time_slots.find((s) => s.code === timeSlot)?.period
       if (dayFull) e.timeSlot = t('err_day_full')
       else if (takenPeriods.includes(period)) e.timeSlot = t('err_spot_taken')
     }
     if (!image && !editing) e.image = t('err_need_image')
+    if (contact && !/^[6-9]\d{9}$/.test(contact)) e.contact = t('err_bad_mobile')
+    const link = youtube.trim()
+    if (
+      link &&
+      !/^(https?:\/\/)?(www\.|m\.)?(youtube\.com|youtu\.be)\//i.test(link)
+    ) {
+      e.youtube = t('err_bad_youtube')
+    }
     return e
   }
 
@@ -210,6 +232,9 @@ export default function BookingForm() {
       return
     }
 
+    let link = youtube.trim()
+    if (link && !/^https?:\/\//i.test(link)) link = `https://${link}`
+
     const body = new FormData()
     body.append('kind', kind)
     body.append('category', category)
@@ -221,7 +246,10 @@ export default function BookingForm() {
     body.append('other_venue', venue === 'other' ? otherVenue.trim() : '')
     body.append('date', date)
     body.append('time_slot', timeSlot)
+    body.append('custom_time', timeSlot === 'other' ? customTime : '')
     if (image) body.append('parcha', image)
+    body.append('contact_number', contact)
+    body.append('youtube_url', link)
     body.append('isaal_e_sawaab', withIsaal ? 'true' : 'false')
     if (withIsaal) {
       names
@@ -442,7 +470,7 @@ export default function BookingForm() {
         </Field>
 
         <Field id="date" label={t('date')} error={errors.date}>
-            <DatePicker
+          <DatePicker
             value={date}
             onChange={setDate}
             today={todayString()}
@@ -491,6 +519,38 @@ export default function BookingForm() {
               </div>
             )
           })}
+
+          <div className="period-group">
+            <div className="slots">
+              <button
+                type="button"
+                className={
+                  'slot-btn wide' + (timeSlot === 'other' ? ' selected' : '')
+                }
+                disabled={!date || dayFull}
+                aria-pressed={timeSlot === 'other'}
+                onClick={() => setTimeSlot('other')}
+              >
+                {t('other')}
+              </button>
+            </div>
+            {timeSlot === 'other' && (
+              <div className="custom-time">
+                <label htmlFor="custom-time">{t('customTimeLabel')}</label>
+                <input
+                  id="custom-time"
+                  type="time"
+                  dir="ltr"
+                  value={customTime}
+                  onChange={(e) => setCustomTime(e.target.value)}
+                />
+                {customPeriod && takenPeriods.includes(customPeriod) && (
+                  <div className="field-error">{t('periodTaken')}</div>
+                )}
+              </div>
+            )}
+          </div>
+
           {errors.timeSlot && (
             <div className="field-error" role="alert">
               {errors.timeSlot}
@@ -515,6 +575,42 @@ export default function BookingForm() {
             />
           </label>
           {shownImage && <img className="preview" src={shownImage} alt="" />}
+        </Field>
+
+        <Field
+          id="contact"
+          label={t('contactNumber')}
+          hint={t('contactHelp')}
+          error={errors.contact}
+        >
+          <input
+            id="contact"
+            dir="ltr"
+            type="tel"
+            inputMode="numeric"
+            maxLength={10}
+            autoComplete="off"
+            value={contact}
+            onChange={(e) => setContact(e.target.value.replace(/\D/g, ''))}
+          />
+        </Field>
+
+        <Field
+          id="youtube"
+          label={t('youtubeLink')}
+          hint={t('youtubeHelp')}
+          error={errors.youtube}
+        >
+          <input
+            id="youtube"
+            dir="ltr"
+            type="url"
+            inputMode="url"
+            maxLength={300}
+            placeholder="https://youtu.be/..."
+            value={youtube}
+            onChange={(e) => setYoutube(e.target.value)}
+          />
         </Field>
 
         <Field

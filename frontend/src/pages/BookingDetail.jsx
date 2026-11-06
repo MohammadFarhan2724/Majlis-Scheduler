@@ -13,6 +13,8 @@ import {
   whatsappUrl,
 } from '../share'
 
+import { slotLabel } from '../slots'
+
 export default function BookingDetail() {
   const { id } = useParams()
   const location = useLocation()
@@ -88,7 +90,7 @@ export default function BookingDetail() {
           {h.day} {months[h.month - 1]} {h.year} {t('hijriSuffix')}
         </div>
         <div className="card-time">
-          {t(`slot_${b.time_slot.replace(':', '')}`)}
+          {slotLabel(b, t, lang)}
         </div>
 
         <a href={mediaPath(b.parcha)} target="_blank" rel="noreferrer">
@@ -111,6 +113,20 @@ export default function BookingDetail() {
           )}
           <dt>{t('khitabat')}</dt>
           <dd dir="auto">{b.khitabat}</dd>
+          {b.contact_number && (
+            <>
+              <dt>{t('contactShort')}</dt>
+              <dd>
+                <a
+                  className="inline-link"
+                  dir="ltr"
+                  href={`tel:+91${b.contact_number}`}
+                >
+                  {b.contact_number}
+                </a>
+              </dd>
+            </>
+          )}
           {b.marhoomeen.length > 0 && (
             <>
               <dt>{t('isaalFor')}</dt>
@@ -134,6 +150,16 @@ export default function BookingDetail() {
         </dl>
 
           <div className="action-stack">
+          {b.youtube_url && b.youtube_url.startsWith('https://') && (
+          <a
+            className="btn-youtube"
+            href={b.youtube_url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ▶ {t('watchYoutube')}
+            </a>
+          )}
           <a
             className="btn-whatsapp"
             href={whatsappUrl(shareText(b, t, lang))}

@@ -83,6 +83,8 @@ const KNOWN_ERRORS = [
   ['organizer name', 'err_organizer_needed'],
   ['Wrong password', 'err_wrong_old_password'],
   ['too similar', 'err_pw_similar'],
+  ['valid YouTube', 'err_bad_youtube'],
+  ['choose the time', 'err_pick_time'],
   ['required', 'err_required'],
 ]
 

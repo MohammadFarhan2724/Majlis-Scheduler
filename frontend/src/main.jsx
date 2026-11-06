@@ -3,12 +3,12 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import './i18n'
 import './index.css'
-import { applyFontScale, applyTheme, getFontScale, getTheme } from './theme'
+import { applyFontScale, applyTheme, getFontScale, getThemeChoice, watchSystemTheme } from './theme'
 import App from './App.jsx'
 
 // before the first screen is drawn, so there is no flash
-applyTheme(getTheme())
-applyFontScale(getFontScale())
+applyTheme(getThemeChoice())
+watchSystemTheme(getThemeChoice)
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

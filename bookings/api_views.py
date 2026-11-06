@@ -227,6 +227,7 @@ def options_api(request):
         "time_slots": [
             {"code": code, "label": str(label), "period": SLOT_PERIOD[code]}
             for code, label in TimeSlot.choices
+            if code != "other"
         ],
         "venues": VenueSerializer(Venue.objects.order_by("id"), many=True).data,
     })

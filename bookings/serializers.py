@@ -1,13 +1,17 @@
+import re
+from urllib.parse import urlparse
+
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 from rest_framework import serializers
 
 from .hijri import hijri_for
 from .models import (
-    SLOT_PERIOD, Booking, MajlisType, Marhoomeen, MehfilType, Venue,
+    SLOT_PERIOD, Booking, MajlisType, Marhoomeen, MehfilType, Venue, period_of
 )
 from .images import clean_image, make_thumbnail
 
+YOUTUBE_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"}
 
 class VenueSerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,8 +34,8 @@ class BookingSerializer(serializers.ModelSerializer):
         fields = [
             "id", "kind", "category", "other_category", "organizer_name", "sogwaran",
             "khitabat", "venue", "venue_detail", "other_venue", "date",
-            "hijri_date", "time_slot", "period", "parcha","parcha_thumb", "isaal_e_sawaab",
-            "marhoomeen", "marhoomeen_names", "after_majlis", "is_mine",
+            "hijri_date", "time_slot", "custom_time", "period", "parcha","parcha_thumb", "isaal_e_sawaab",
+            "marhoomeen", "marhoomeen_names", "after_majlis", "contact_number", "youtube_url", "is_mine",
         ]
         read_only_fields = ["period", "parcha_thumb"]
 
@@ -53,6 +57,23 @@ class BookingSerializer(serializers.ModelSerializer):
 
     def validate_parcha(self, value):
         return clean_image(value)
+
+    def validate_youtube_url(self, value):
+        value = value.strip()
+        if not value:
+            return ""
+        if not value.lower().startswith(("http://", "https://")):
+            value = "https://" + value
+        host = (urlparse(value).hostname or "").lower()
+        if host not in YOUTUBE_HOSTS:
+            raise serializers.ValidationError("Please paste a valid YouTube link.")
+        return "https://" + value.split("://", 1)[1]
+
+    def validate_contact_number(self, value):
+        value = value.strip()
+        if value and not re.fullmatch(r"[6-9]\d{9}", value):
+            raise serializers.ValidationError("Enter a valid 10-digit mobile number.")
+        return value
 
     def validate(self, attrs):
         inst = self.instance
@@ -97,13 +118,18 @@ class BookingSerializer(serializers.ModelSerializer):
         attrs["marhoomeen_names"] = names if isaal else []
 
         day, slot = val("date"), val("time_slot")
+        custom = val("custom_time") if slot == "other" else None
+        if slot == "other" and custom is None:
+            raise serializers.ValidationError(
+                {"custom_time": "Please choose the time."})
+        attrs["custom_time"] = custom
         changed = inst is None or day != inst.date
         if "date" in attrs and changed and day < timezone.localdate():
             raise serializers.ValidationError({"date": "Date is in the past."})
         same_day = Booking.objects.filter(date=day)
         if inst:
             same_day = same_day.exclude(pk=inst.pk)
-        if same_day.filter(period=SLOT_PERIOD[slot]).exists():
+        if same_day.filter(period=period_of(slot, custom)).exists():
             raise serializers.ValidationError("This spot is already taken.")
         if same_day.count() >= 2:
             raise serializers.ValidationError("This day is already full.")

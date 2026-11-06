@@ -50,6 +50,7 @@ class TimeSlot(models.TextChoices):
     E_730 = "19:30", _("7:30 PM")
     E_800 = "20:00", _("8:00 PM")
     E_MAGHRIBAIN = "after_maghribain", _("After Namaz e Maghribain")
+    OTHER = "other", _("Others")
 
 
 # Which part of the day each slot belongs to
@@ -60,6 +61,17 @@ SLOT_PERIOD = {
     "19:00": "evening", "19:15": "evening", "19:30": "evening",
     "20:00": "evening", "after_maghribain": "evening",
 }
+
+def period_of(time_slot, custom_time=None):
+    """Which part of the day a slot belongs to. For "Others" it follows the clock."""
+    if time_slot == "other":
+        hour = custom_time.hour if custom_time else 0
+        if hour < 12:
+            return "morning"
+        if hour < 17:
+            return "afternoon"
+        return "evening"
+    return SLOT_PERIOD[time_slot]
 
 class Venue(models.Model):
     name_en = models.CharField(max_length=100)
@@ -82,11 +94,14 @@ class Booking(models.Model):
     other_venue = models.CharField(max_length=150, blank=True)
     date = models.DateField()
     time_slot = models.CharField(max_length=20, choices=TimeSlot.choices)
+    custom_time = models.TimeField(null=True, blank=True)
     period = models.CharField(max_length=10, choices=Period.choices, editable=False)
     parcha = models.ImageField(upload_to="parcha/")
     parcha_thumb = models.ImageField(upload_to="thumbs/", blank=True)
     isaal_e_sawaab = models.BooleanField(default=False)
     after_majlis = models.TextField(blank=True)
+    youtube_url = models.URLField(max_length=300, blank=True)
+    contact_number = models.CharField(max_length=10, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE,
@@ -105,7 +120,7 @@ class Booking(models.Model):
             raise ValidationError("Please select a venue or write one.")
 
     def save(self, *args, **kwargs):
-        self.period = SLOT_PERIOD[self.time_slot]  # set automatically
+        self.period = period_of(self.time_slot, self.custom_time)  # set automatically
         super().save(*args, **kwargs)
 
     def __str__(self):

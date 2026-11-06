@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { mediaPath } from '../api'
 import { formatDateShort } from '../dates'
+import { slotLabel } from '../slots'
 
 export default function BookingCard({ booking: b, footer }) {
   const { t, i18n } = useTranslation()
@@ -14,7 +15,7 @@ export default function BookingCard({ booking: b, footer }) {
   const venue = b.venue_detail
     ? b.venue_detail[`name_${lang}`] || b.venue_detail.name_en
     : b.other_venue
-  const time = t(`slot_${b.time_slot.replace(':', '')}`)
+  const time = slotLabel(b, t, lang)
 
   return (
     <article className="card">

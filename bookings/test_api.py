@@ -516,3 +516,57 @@ class MeAndKindTests(ApiTestBase):
         self.assertEqual([b["kind"] for b in r.data], ["mehfil"])
         r = self.client.get("/api/bookings/mine/?kind=majlis")
         self.assertEqual([b["kind"] for b in r.data], ["majlis"])
+
+class ExtraFieldsApiTests(ApiTestBase):
+    def post(self, **extra):
+        self.login_as(self.user1)
+        return self.client.post(
+            "/api/bookings/", payload(**extra), format="multipart")
+
+    def test_other_time_sets_the_part_of_the_day(self):
+        r = self.post(time_slot="other", custom_time="18:15")
+        self.assertEqual(r.status_code, 201)
+        self.assertEqual(r.data["period"], "evening")
+        self.assertEqual(r.data["custom_time"], "18:15:00")
+
+    def test_other_time_needs_a_time(self):
+        r = self.post(time_slot="other")
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("custom_time", r.data)
+
+    def test_other_time_blocks_the_same_part(self):
+        make_booking(self.user2, "09:00")  # the morning is taken
+        r = self.post(time_slot="other", custom_time="11:15")
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("already taken", str(r.data))
+
+    def test_normal_slot_ignores_custom_time(self):
+        r = self.post(time_slot="09:30", custom_time="18:15")
+        self.assertEqual(r.status_code, 201)
+        self.assertIsNone(r.data["custom_time"])
+        self.assertEqual(r.data["period"], "morning")
+
+    def test_youtube_link_saved(self):
+        r = self.post(youtube_url="https://youtu.be/abc123")
+        self.assertEqual(r.status_code, 201)
+        self.assertEqual(r.data["youtube_url"], "https://youtu.be/abc123")
+
+    def test_youtube_link_must_be_youtube(self):
+        r = self.post(youtube_url="https://example.com/video")
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("youtube_url", r.data)
+
+    def test_contact_number_saved(self):
+        r = self.post(contact_number="9876543210")
+        self.assertEqual(r.status_code, 201)
+        self.assertEqual(r.data["contact_number"], "9876543210")
+
+    def test_bad_contact_number_rejected(self):
+        r = self.post(contact_number="12345")
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("contact_number", r.data)
+
+    def test_options_do_not_list_other_as_a_slot(self):
+        r = self.client.get("/api/options/")
+        codes = [s["code"] for s in r.data["time_slots"]]
+        self.assertNotIn("other", codes)

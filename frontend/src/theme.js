@@ -1,30 +1,46 @@
-const KEY = 'theme'
+const KEY = 'theme' // 'light', 'dark' or 'system'
 
-// the saved choice, or the phone's own light/dark setting on the first visit
-export function getTheme() {
+export function getThemeChoice() {
   try {
     const saved = localStorage.getItem(KEY)
-    if (saved === 'light' || saved === 'dark') return saved
+    if (saved === 'light' || saved === 'dark' || saved === 'system') return saved
   } catch {
-    // storage not available: use the phone setting
+    // storage not available: follow the phone
   }
+  return 'system'
+}
+
+function systemTheme() {
   const dark =
     window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
   return dark ? 'dark' : 'light'
 }
 
-export function applyTheme(theme) {
-  document.documentElement.dataset.theme = theme
+export function applyTheme(choice) {
+  document.documentElement.dataset.theme =
+    choice === 'system' ? systemTheme() : choice
 }
 
-export function saveTheme(theme) {
+export function saveTheme(choice) {
   try {
-    localStorage.setItem(KEY, theme)
+    localStorage.setItem(KEY, choice)
   } catch {
     // ignore
   }
 }
 
+// when the choice is "system", follow the phone if its setting changes
+export function watchSystemTheme(getChoice) {
+  if (!window.matchMedia) return () => {}
+  const media = window.matchMedia('(prefers-color-scheme: dark)')
+  const onChange = () => {
+    if (getChoice() === 'system') applyTheme('system')
+  }
+  media.addEventListener('change', onChange)
+  return () => media.removeEventListener('change', onChange)
+}
+
+// ---------- text size ----------
 const SCALE_KEY = 'fontScale'
 
 // text size in percent: 85 to 150, normal is 100
