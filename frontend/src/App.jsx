@@ -16,6 +16,8 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import { useTranslation } from 'react-i18next'
 import NotFound from './pages/NotFound'
+import MutawalliLogin from './pages/MutawalliLogin'
+import MutawalliPortal from './pages/MutawalliPortal'
 
 // the intro plays when the app starts on the home page, once per start
 function shouldShowSplash() {
@@ -99,6 +101,8 @@ export default function App() {
                   </RequireAuth>
                 }
               />
+              <Route path="/mutawalli/login" element={<MutawalliLogin />} />
+              <Route path="/mutawalli" element={<MutawalliPortal />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

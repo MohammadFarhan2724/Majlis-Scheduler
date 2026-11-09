@@ -1,5 +1,10 @@
 {
   "appName": "मजलिस शेड्यूलर",
+  "mutawalliLink": "क्या आप मुतवल्ली हैं? यहाँ लॉगिन करें",
+  "mutawalliLogin": "मुतवल्ली लॉगिन",
+  "mutawalliPortal": "मुतवल्ली पोर्टल",
+  "mutawalliUsername": "यूज़रनेम",
+  "mutawalliNotAllowed": "यह मुतवल्ली अकाउंट नहीं है।",
   "customTimeLabel": "समय चुनें",
   "contactNumber": "संपर्क नंबर",
   "contactHelp": "ज़रूरी नहीं। यह नंबर सबको दिखेगा।",

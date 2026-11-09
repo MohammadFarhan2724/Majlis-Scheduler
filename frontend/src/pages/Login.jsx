@@ -71,6 +71,9 @@ export default function Login() {
       </p>
       <p className="switch-link">
         {t('newHere')} <Link to="/register">{t('register')}</Link>
+        <p className="switch-link">
+        <Link to="/mutawalli/login">{t('mutawalliLink')}</Link>
+      </p>
       </p>
     </>
   )

@@ -1,5 +1,10 @@
 {
   "appName": "Majlis Scheduler",
+  "mutawalliLink": "Are you a mutawalli? Login here",
+  "mutawalliLogin": "Mutawalli login",
+  "mutawalliPortal": "Mutawalli portal",
+  "mutawalliUsername": "Username",
+  "mutawalliNotAllowed": "This is not a mutawalli account.",
   "customTimeLabel": "Choose the time",
   "contactNumber": "Contact number",
   "contactHelp": "Optional. This number will be visible to everyone.",

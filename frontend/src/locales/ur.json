@@ -1,5 +1,10 @@
 {
   "appName": "مجلس شیڈیولر",
+  "mutawalliLink": "کیا آپ متولی ہیں؟ یہاں لاگ اِن کریں",
+  "mutawalliLogin": "متولی لاگ اِن",
+  "mutawalliPortal": "متولی پورٹل",
+  "mutawalliUsername": "یوزر نیم",
+  "mutawalliNotAllowed": "یہ متولی اکاؤنٹ نہیں ہے۔",
   "customTimeLabel": "وقت منتخب کریں",
   "contactNumber": "رابطہ نمبر",
   "contactHelp": "ضروری نہیں۔ یہ نمبر سب کو نظر آئے گا۔",
