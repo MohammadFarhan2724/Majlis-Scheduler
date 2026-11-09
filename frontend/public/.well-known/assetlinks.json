@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "org.duckdns.majlisscheduler.twa",
+        "sha256_cert_fingerprints": ["7B:F1:CF:67:D4:88:EF:2D:29:DF:24:29:77:8D:B2:3C:E1:A7:7B:82:71:74:77:FC:4A:CA:7A:3A:0E:80:33:8E"]
+      }
+    }]

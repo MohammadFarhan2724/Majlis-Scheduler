@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 
 from .models import (
-    AccountFlag, Booking, HijriMonth, Marhoomeen, PasswordResetRequest, Venue,
+    AccountFlag, Booking, HijriMonth, Marhoomeen, PasswordResetRequest, Venue, Mutawalli
 )
 
 
@@ -58,3 +58,5 @@ class PasswordResetRequestAdmin(admin.ModelAdmin):
     list_display = ("mobile", "created_at", "handled")
     list_filter = ("handled",)
     actions = [reset_password]
+
+admin.site.register(Mutawalli)

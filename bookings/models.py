@@ -83,6 +83,17 @@ class Venue(models.Model):
     def __str__(self):
         return self.name_en
 
+class Mutawalli(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="mutawalli"
+    )
+    venue = models.OneToOneField(
+        Venue, on_delete=models.PROTECT, related_name="mutawalli"
+    )
+
+    def __str__(self):
+        return f"{self.user} - {self.venue}"
+
 class Booking(models.Model):
     kind = models.CharField(max_length=10, choices=Kind.choices)
     category = models.CharField(max_length=30)
