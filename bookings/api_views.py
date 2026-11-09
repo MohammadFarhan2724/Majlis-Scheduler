@@ -17,7 +17,7 @@ from .forms import RegisterForm
 from .hijri import hijri_for, hijri_month_name, load_months
 from .models import (
     SLOT_PERIOD, AccountFlag, Booking, MajlisType, MehfilType,
-    PasswordResetRequest, TimeSlot, Venue,
+    Mutawalli, PasswordResetRequest, TimeSlot, Venue,
 )
 from .serializers import BookingSerializer, VenueSerializer
 from .throttles import (
@@ -122,6 +122,7 @@ def login_api(request):
         "token": token.key,
         "name": user.first_name,
         "must_change_password": must_change,
+        "is_mutawalli": Mutawalli.objects.filter(user=user).exists(),
     })
 
 @api_view(["POST"])
@@ -238,4 +239,34 @@ def me_api(request):
     return Response({
         "name": request.user.first_name,
         "mobile": request.user.username,
+        "is_mutawalli": Mutawalli.objects.filter(user=request.user).exists(),
     })
+
+class IsMutawalli(permissions.BasePermission):
+    """Only users linked to a venue (via the Mutawalli table) can pass."""
+    def has_permission(self, request, view):
+        user = request.user
+        return bool(
+            user and user.is_authenticated
+            and Mutawalli.objects.filter(user=user).exists()
+        )
+
+
+@api_view(["GET"])
+@permission_classes([IsMutawalli])
+def mutawalli_bookings_api(request):
+    # The venue comes from the logged-in user, never from the request,
+    # so one mutawalli can never see another's data.
+    venue = request.user.mutawalli.venue
+    today = timezone.localdate()
+    qs = (Booking.objects.filter(venue=venue)
+          .select_related("venue").prefetch_related("marhoomeen"))
+    if request.query_params.get("tab") == "completed":
+        qs = qs.filter(date__lt=today).order_by("-date")
+    else:
+        qs = qs.filter(date__gte=today).order_by("date")
+    serializer = BookingSerializer(
+        qs, many=True,
+        context={"request": request, "hijri_months": load_months()},
+    )
+    return Response(serializer.data)
