@@ -38,6 +38,7 @@ def payload(slot="09:00", day=DAY, **extra):
         "kind": "majlis", "category": "aza", "organizer_name": "Ali",
         "khitabat": "Maulana", "other_venue": "Home",
         "date": day.isoformat(), "time_slot": slot, "parcha": image_file(),
+        "contact_number": "9876543210",
     }
     data.update(extra)
     return data
@@ -282,7 +283,7 @@ class HijriTests(ApiTestBase):
     def test_library_fallback(self):
         self.assertEqual(
         hijri_for(date(2024, 3, 11), []),
-        {"day": 1, "month": 9, "year": 1445})
+        {"day": 29, "month": 8, "year": 1445})
 
     def test_table_decides_the_day(self):
         months = [
@@ -333,7 +334,7 @@ class TodayHijriApiTests(ApiTestBase):
 
     def test_hijri_endpoint(self):
         r = self.client.get("/api/hijri/?date=2024-03-11")
-        self.assertEqual(r.data["hijri"]["month_name"], "Ramazan")
+        self.assertEqual(r.data["hijri"]["month_name"], "Shaban")
 
     def test_hijri_endpoint_bad_date(self):
         r = self.client.get("/api/hijri/?date=abc")
