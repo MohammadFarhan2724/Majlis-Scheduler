@@ -4,6 +4,7 @@ from hijridate import Gregorian
 
 from .models import HijriMonth
 
+from datetime import timedelta
 
 def load_months():
     return list(HijriMonth.objects.order_by("start_date"))
@@ -19,7 +20,9 @@ def hijri_for(day, months=None):
         if days_in <= 29:  # a month is never longer than 30 days
             return {"day": days_in + 1, "month": m.month, "year": m.year}
     # no row for this date yet: use the library estimate
-    h = Gregorian(day.year, day.month, day.day).to_hijri()
+    # Saudi dates run about one day ahead of India, so go back one day.
+    d = day - timedelta(days=1)
+    h = Gregorian(d.year, d.month, d.day).to_hijri()
     return {"day": h.day, "month": h.month, "year": h.year}
 
 HIJRI_MONTHS_EN = [
