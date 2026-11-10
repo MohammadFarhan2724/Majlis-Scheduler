@@ -87,6 +87,12 @@ export default function Home() {
 
   return (
     <>
+        <Reveal>
+        <Link className="live-btn" to="/live">
+          <span className="live-dot" aria-hidden="true" />
+          {t('liveMajlis')}
+        </Link>
+      </Reveal>
       <Reveal>
         <h1>{t('appName')}</h1>
       </Reveal>

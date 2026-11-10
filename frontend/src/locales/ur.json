@@ -1,5 +1,8 @@
 {
   "appName": "مجلس شیڈیولر",
+  "liveMajlis": "لائیو مجلس",
+  "noLiveNow": "اس وقت کوئی مجلس یا محفل نہیں ہو رہی۔",
+  "notLiveOnYoutube": "یہ مجلس یوٹیوب پر لائیو نہیں ہے۔",
   "mutawalliLink": "کیا آپ متولی ہیں؟ یہاں لاگ اِن کریں",
   "mutawalliLogin": "متولی لاگ اِن",
   "mutawalliPortal": "متولی پورٹل",

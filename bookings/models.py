@@ -112,7 +112,7 @@ class Booking(models.Model):
     isaal_e_sawaab = models.BooleanField(default=False)
     after_majlis = models.TextField(blank=True)
     youtube_url = models.URLField(max_length=300, blank=True)
-    contact_number = models.CharField(max_length=10, blank=True)
+    contact_number = models.CharField(max_length=10)
     created_at = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE,

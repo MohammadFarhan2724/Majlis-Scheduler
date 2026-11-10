@@ -22,3 +22,38 @@ export function slotLabel(b, t, lang) {
   }
   return t(`slot_${b.time_slot.replace(':', '')}`)
 }
+
+// how long a majlis shows as "live" after it starts (in minutes)
+export const LIVE_MINUTES = 120
+
+// slots with no fixed time use these. Change AFTER_MAGHRIBAIN in summer
+// (the prayer moves later, up to about 7:17 PM)
+const AFTER_ZOHRAIN = '13:15'
+const AFTER_MAGHRIBAIN = '18:15'
+
+function startClock(b) {
+  if (b.time_slot === 'after_zohrain') return AFTER_ZOHRAIN
+  if (b.time_slot === 'after_maghribain') return AFTER_MAGHRIBAIN
+  if (b.time_slot === 'other') {
+    return b.custom_time ? b.custom_time.slice(0, 5) : null
+  }
+  return b.time_slot // example: "19:00"
+}
+
+// today's date on the phone, as YYYY-MM-DD
+function localDateKey(now) {
+  const m = String(now.getMonth() + 1).padStart(2, '0')
+  const d = String(now.getDate()).padStart(2, '0')
+  return `${now.getFullYear()}-${m}-${d}`
+}
+
+// true if this booking is being held right now (by the phone's clock)
+export function isLiveNow(b, now = new Date()) {
+  if (b.date !== localDateKey(now)) return false
+  const clock = startClock(b)
+  if (!clock || !clock.includes(':')) return false
+  const [h, m] = clock.split(':').map(Number)
+  const start = h * 60 + m
+  const current = now.getHours() * 60 + now.getMinutes()
+  return current >= start && current < start + LIVE_MINUTES
+}

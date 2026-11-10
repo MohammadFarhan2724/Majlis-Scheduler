@@ -210,7 +210,8 @@ export default function BookingForm() {
       else if (takenPeriods.includes(period)) e.timeSlot = t('err_spot_taken')
     }
     if (!image && !editing) e.image = t('err_need_image')
-    if (contact && !/^[6-9]\d{9}$/.test(contact)) e.contact = t('err_bad_mobile')
+    if (!contact) e.contact = need
+    else if (!/^[6-9]\d{9}$/.test(contact)) e.contact = t('err_bad_mobile')
     const link = youtube.trim()
     if (
       link &&
@@ -590,6 +591,7 @@ export default function BookingForm() {
             inputMode="numeric"
             maxLength={10}
             autoComplete="off"
+            required
             value={contact}
             onChange={(e) => setContact(e.target.value.replace(/\D/g, ''))}
           />

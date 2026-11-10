@@ -71,7 +71,7 @@ class BookingSerializer(serializers.ModelSerializer):
 
     def validate_contact_number(self, value):
         value = value.strip()
-        if value and not re.fullmatch(r"[6-9]\d{9}", value):
+        if not re.fullmatch(r"[6-9]\d{9}", value):
             raise serializers.ValidationError("Enter a valid 10-digit mobile number.")
         return value
 

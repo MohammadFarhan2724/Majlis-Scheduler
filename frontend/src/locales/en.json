@@ -1,5 +1,8 @@
 {
   "appName": "Majlis Scheduler",
+  "liveMajlis": "Live Majlis",
+  "noLiveNow": "No majlis or mehfil is being held right now.",
+  "notLiveOnYoutube": "This majlis is not live on YouTube.",
   "mutawalliLink": "Are you a mutawalli? Login here",
   "mutawalliLogin": "Mutawalli login",
   "mutawalliPortal": "Mutawalli portal",
