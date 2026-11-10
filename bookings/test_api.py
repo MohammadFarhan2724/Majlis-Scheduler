@@ -10,6 +10,7 @@ from PIL import Image
 from rest_framework.test import APITestCase
 
 from .models import Booking, Venue, HijriMonth
+from .models import Mutawalli
 from .hijri import hijri_for
 
 from django.core.cache import cache
@@ -502,7 +503,10 @@ class MeAndKindTests(ApiTestBase):
         self.user1.save()
         self.login_as(self.user1)
         r = self.client.get("/api/me/")
-        self.assertEqual(r.data, {"name": "Ali Raza", "mobile": "9000000001"})
+        self.assertEqual(
+            r.data,
+            {"name": "Ali Raza", "mobile": "9000000001", "is_mutawalli": False},
+        )
 
     def test_mine_can_filter_by_kind(self):
         make_booking(self.user1, "09:00")  # a majlis
@@ -570,3 +574,62 @@ class ExtraFieldsApiTests(ApiTestBase):
         r = self.client.get("/api/options/")
         codes = [s["code"] for s in r.data["time_slots"]]
         self.assertNotIn("other", codes)
+
+def make_venue_booking(owner, venue, day, slot="09:00"):
+    return Booking.objects.create(
+        kind="majlis", category="aza", organizer_name="A", khitabat="B",
+        venue=venue, date=day, time_slot=slot,
+        parcha="parcha/x.png", owner=owner,
+    )
+
+
+class MutawalliApiTests(ApiTestBase):
+    def setUp(self):
+        super().setUp()
+        self.v1 = Venue.objects.create(name_en="Venue One")
+        self.v2 = Venue.objects.create(name_en="Venue Two")
+        self.m1 = User.objects.create_user("mutawalli1", password=PASSWORD)
+        self.m2 = User.objects.create_user("mutawalli2", password=PASSWORD)
+        Mutawalli.objects.create(user=self.m1, venue=self.v1)
+        Mutawalli.objects.create(user=self.m2, venue=self.v2)
+        past = date.today() - timedelta(days=2)
+        self.v1_up = make_venue_booking(self.user1, self.v1, DAY, "09:00")
+        self.v1_past = make_venue_booking(self.user1, self.v1, past, "09:00")
+        self.v2_up = make_venue_booking(self.user1, self.v2, DAY, "19:00")
+        make_booking(self.user2, "13:00")  # "Others" venue: no mutawalli sees it
+
+    def ids(self, response):
+        return [b["id"] for b in response.data]
+
+    def test_needs_login(self):
+        r = self.client.get("/api/mutawalli/bookings/")
+        self.assertEqual(r.status_code, 401)
+
+    def test_normal_user_is_blocked(self):
+        self.login_as(self.user1)
+        r = self.client.get("/api/mutawalli/bookings/")
+        self.assertEqual(r.status_code, 403)
+
+    def test_sees_only_own_venue_upcoming(self):
+        self.login_as(self.m1)
+        r = self.client.get("/api/mutawalli/bookings/")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(self.ids(r), [self.v1_up.pk])
+
+    def test_sees_only_own_venue_completed(self):
+        self.login_as(self.m1)
+        r = self.client.get("/api/mutawalli/bookings/?tab=completed")
+        self.assertEqual(self.ids(r), [self.v1_past.pk])
+
+    def test_other_mutawalli_sees_other_data(self):
+        self.login_as(self.m2)
+        r = self.client.get("/api/mutawalli/bookings/")
+        self.assertEqual(self.ids(r), [self.v2_up.pk])
+
+    def test_login_tells_if_mutawalli(self):
+        r = self.client.post(
+            "/api/login/", {"mobile": "mutawalli1", "password": PASSWORD})
+        self.assertTrue(r.data["is_mutawalli"])
+        r = self.client.post(
+            "/api/login/", {"mobile": "9000000001", "password": PASSWORD})
+        self.assertFalse(r.data["is_mutawalli"])
